@@ -186,7 +186,7 @@ exports.singleInstructor = async (req, res) => {
     }
 };
 
-exports.updateInstructorStatus = async (req, res) => {
+exports.updateapplicationStatus = async (req, res) => {
     try {
         const instructorId = req.params.id;
         const instructor = await Instructor.findById({ _id: instructorId });
@@ -197,14 +197,12 @@ exports.updateInstructorStatus = async (req, res) => {
         }
         const name = instructor.personalInformation.firstName;
         const email = instructor.personalInformation.email;
-        const status = req.query.status;
-        const updatedData = { applicationStatus: status };
-        if (status === 'approved') {
+        if (req.query.status === 'Approved') {
             const interviewDate = getFutureDate(7);
             const resultsDate = getFutureDate(15);
             await sendResponseEmail(email, name, interviewDate, resultsDate);
         }
-        const updatedInstructor = await Instructor.findByIdAndUpdate(instructorId, updatedData, { new: true, runValidators: true });
+        const updatedInstructor = await Instructor.findByIdAndUpdate(instructorId, { $set: { applicationStatus: req.query.status } }, { new: true, runValidators: true });
         if (!updatedInstructor) {
             return res.status(status.NOT_FOUND).json({
                 message: "Instructor not found"
@@ -212,8 +210,33 @@ exports.updateInstructorStatus = async (req, res) => {
         }
         await updatedInstructor.save();
         return res.status(status.OK).json({
-            message: "Instructor updated",
-            data: updatedInstructor
+            message: "Instructor updated"
+        });
+    }
+    catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+};
+
+exports.updateemployMentStatus = async (req, res) => {
+    try {
+        const instructor = await Instructor.findById({ _id: req.params.id });
+        if (!instructor) {
+            return res.status(status.NOT_FOUND).json({
+                message: "Instructor not found"
+            });
+        }
+        const updatedInstructor = await Instructor.findByIdAndUpdate(req.params.id, { $set: { employMentStatus: req.query.status } }, { new: true, runValidators: true });
+        if (!updatedInstructor) {
+            return res.status(status.NOT_FOUND).json({
+                message: "Instructor not found"
+            });
+        }
+        await updatedInstructor.save();
+        return res.status(status.OK).json({
+            message: "Instructor updated"
         });
     }
     catch (err) {

@@ -7,15 +7,16 @@ const { getFileUrl } = require("../../utils/CloudinaryConfig");
 exports.addEvent = async (req, res) => {
     try {
         const eventdata = JSON.parse(req.body.data);
-        const { title, notes, description, workshop, schedule, price, category } = eventdata;
-        const Category = await eventCategory.findOne({ name: category });
+        const Category = await eventCategory.findOne({ name: eventdata.category });
         if (!Category) {
             return res.status(status.NOT_FOUND).json({ message: "Category not found" });
         }
-        const publicId = req.file ? req.file.filename : null;
-        const event = new Event({ image: publicId, title, notes, description, workshop, schedule, price, category: Category._id });
+        eventdata.image = req.file ? req.file.filename : null;
+        eventdata.category = Category._id;
+        console.log(eventdata)
+        const event = new Event(eventdata);
         await event.save();
-        const eventCard = new EventCard({ image: publicId, title, notes, event: event._id });
+        const eventCard = new EventCard({ image: eventdata.image, title: eventdata.title, notes: eventdata.notes, event: event._id });
         await eventCard.save();
         return res.status(status.OK).json({
             message: "Event added successfully"
@@ -76,11 +77,11 @@ exports.singleEvent = async (req, res) => {
 exports.updateEvent = async (req, res) => {
     try {
         const id = req.params.id;
-        const updatedData = { ...req.body };
+        const eventdata = JSON.parse(req.body.data);
         if (req.file) {
-            updatedData.image = req.file.filename;
+            eventdata.image = req.file.filename;
         }
-        const updatedEvent = await Event.findByIdAndUpdate(id, updatedData, { new: true, runValidators: true });
+        const updatedEvent = await Event.findByIdAndUpdate(id, eventdata, { new: true, runValidators: true });
         if (!updatedEvent) {
             return res.status(status.NOT_FOUND).json({
                 message: "Event not found"
@@ -89,7 +90,6 @@ exports.updateEvent = async (req, res) => {
         await updatedEvent.save();
         return res.status(status.OK).json({
             message: "Event updated",
-            data: updatedEvent
         });
     }
     catch (err) {

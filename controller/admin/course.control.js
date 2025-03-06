@@ -85,14 +85,13 @@ exports.updateCourse = async (req, res) => {
                 message: "Course not found"
             });
         }
-        const updatedCourse = { ...req.body };
+        const updatedCourse = JSON.parse(req.body.data);
         if (req.file) {
             updatedCourse.courseDetails.image = req.file.filename;
         }
         await Course.findByIdAndUpdate(id, updatedCourse, { new: true, runValidators: true });
         return res.status(status.OK).json({
             message: "Course updated successfully",
-            course: updatedCourse
         });
     }
     catch (err) {

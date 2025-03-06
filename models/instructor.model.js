@@ -73,13 +73,13 @@ const instructorSchema = new mongoose.Schema({
     },
     applicationStatus: {
         type: String,
-        enum: ['pending', 'approved', 'rejected'],
-        default: 'pending'
+        enum: ['Pending', 'Approved', 'Rejected'],
+        default: 'Pending'
     },
     employMentStatus: {
         type: String,
-        enum: ['employed', 'unemployed', 'freelancer'],
-        default: 'unemployed'
+        enum: ['Employed', 'Unemployed', 'Freelancer'],
+        default: 'Unemployed'
     },
 }, {
     timestamps: true

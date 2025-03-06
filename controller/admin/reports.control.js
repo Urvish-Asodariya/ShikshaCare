@@ -130,37 +130,36 @@ exports.recentActivities = async (req, res) => {
         const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5);
         const recentBooks = await Book.find().sort({ createdAt: -1 }).limit(5);
         const recentEvents = await Event.find().sort({ createdAt: -1 }).limit(5);
-        const activities = [];
-        recentUsers.forEach(user => {
-            activities.push({
+        const recentCourses = await Course.find().sort({ createdAt: -1 }).limit(5);
+        const activities = [
+            ...recentUsers.map(user => ({
                 type: "User",
                 message: `New user registration: ${user.firstName} ${user.lastName}`,
                 timestamp: user.createdAt
-            });
-        });
-        recentBooks.forEach(book => {
-            activities.push({
+            })),
+            ...recentBooks.map(book => ({
                 type: "Book",
                 message: `New book added: "${book.title}"`,
                 timestamp: book.createdAt
-            });
-        });
-        recentEvents.forEach(event => {
-            activities.push({
+            })),
+            ...recentEvents.map(event => ({
                 type: "Event",
                 message: `New event scheduled: "${event.title}"`,
                 timestamp: event.createdAt
-            });
-        });
+            })),
+            ...recentCourses.map(course => ({
+                type: "Course",
+                message: `New course added: "${course.courseDetails.title}"`,
+                timestamp: course.createdAt
+            }))
+        ];
         activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-        res.status(status.OK).json({
+        res.status(200).json({
             message: "Recent activities fetched successfully",
-            activities: activities
+            activities
         });
-    }
-    catch (err) {
-        return res.status(status.INTERNAL_SERVER_ERROR).json({
+    } catch (err) {
+        return res.status(500).json({
             message: err.message
         });
     }
@@ -177,13 +176,17 @@ exports.cards = async (req, res) => {
         //course
         const courseCategories = await courseCategory.countDocuments();
         const newestCourse = await Course.findOne().sort({ createdAt: -1 }).select("courseDetails.title createdAt");
-        const eventRevenue = await Sells.aggregate([
+        const courseRevenue = await Sells.aggregate([
             { $match: { type: "Course" } },
             { $group: { _id: null, totalRevenue: { $sum: { $multiply: ["$price", "$quantity"] } } } }
         ]);
 
         //books
-        const topRatedBook = await Book.findOne().sort({ 'rating.average': -1 }).select('title rating.average');
+        const sixMonthsAgo = new Date();
+        sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+        const recentPublished = await Book.countDocuments({
+            "details.publicationDate": { $gte: sixMonthsAgo.toISOString().split("T")[0] }
+        });
         const bookCategories = await bookCategory.countDocuments();
         const bookRevenue = await Sells.aggregate([
             { $match: { type: "Book" } },
@@ -227,9 +230,9 @@ exports.cards = async (req, res) => {
 
                 courseCategories: courseCategories,
                 newestCourse: newestCourse,
-                eventRevenue: eventRevenue[0]?.totalRevenue || 0,
+                courseRevenue: courseRevenue[0]?.totalRevenue || 0,
 
-                topRatedBook: topRatedBook,
+                recentPublished: recentPublished,
                 bookCategories: bookCategories,
                 bookRevenue: bookRevenue[0]?.totalRevenue || 0,
 

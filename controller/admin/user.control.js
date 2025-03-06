@@ -1,5 +1,6 @@
 const bcrypt = require("bcryptjs");
 const User = require("../../models/user.model");
+const Book = require("../../models/book.model");
 const { status } = require("http-status");
 const { getFileUrl } = require("../../utils/CloudinaryConfig");
 const validator = require("validator");
@@ -73,9 +74,30 @@ exports.singleUser = async (req, res) => {
             })
         }
         user.image = getFileUrl(user.image);
+        const bookName = await user.map((item) => {
+            item.book.map((item) => {
+                const book = Book.find({ _id: item });
+                return book.title
+            })
+        });
+        const courseName = await user.map((item) => {
+            item.course.map((item) => {
+                const course = Book.find({ _id: item });
+                return course.courseDetails.title
+            })
+        });
+        const eventName = await user.map((item) => {
+            item.event.map((item) => {
+                const event = Book.find({ _id: item });
+                return event.title
+            })
+        });
         return res.status(status.OK).json({
             message: "User profile retrieved successfully",
-            user: user
+            user: user,
+            book: bookName,
+            course: courseName,
+            event: eventName
         });
     }
     catch (err) {
@@ -121,7 +143,7 @@ exports.deleteUser = async (req, res) => {
             });
         }
         return res.status(status.OK).json({
-            message: "User deleted successfully" 
+            message: "User deleted successfully"
         });
     }
     catch (err) {

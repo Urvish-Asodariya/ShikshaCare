@@ -4,11 +4,11 @@ const BookSchema = new mongoose.Schema({
     title: { type: String, required: true },
     author: { type: String, required: true },
     image: { type: String, required: true },
-    pdf: { type: String, required: true },
+    pdf: { type: String },
     badges: [{ type: String }],
     rating: {
         average: { type: Number, min: 0, max: 5 },
-        totalReviews: { type: Number, required: true }
+        totalReviews: { type: Number }
     },
     pricing: {
         price: { type: Number, required: true }

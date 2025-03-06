@@ -6,8 +6,8 @@ const bookCardSchema = new mongoose.Schema({
     image: { type: String, required: true },
     badges: [{ type: String }],
     rating: {
-        average: { type: Number, required: true, min: 0, max: 5 },
-        totalReviews: { type: Number, required: true }
+        average: { type: Number, min: 0, max: 5 },
+        totalReviews: { type: Number, }
     },
     pricing: {
         price: { type: Number, required: true }

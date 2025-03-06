@@ -9,15 +9,18 @@ const { getFileUrl } = require("../../utils/CloudinaryConfig");
 exports.addBook = async (req, res) => {
     try {
         const bookdata = JSON.parse(req.body.data);
-        const { title, author, badges, rating, pricing, details, description, keyFeatures, category } = bookdata;
+        const { title, author, badges, rating, amount, details, description, keyFeatures, category, pdf } = bookdata;
         const Category = await bookCategory.findOne({ name: category });
         if (!Category) {
             return res.status(status.NOT_FOUND).json({ message: "Category not found" });
         }
+        const pricing = {
+            price: amount,
+        }
         const publicId = req.file ? req.file.filename : null;
-        const book = new Book({ title, author, image: publicId, badges, rating, pricing, details, description, keyFeatures, category: Category._id });
+        const book = new Book({ title, author, image: publicId, pdf, badges, rating, pricing: pricing, details, description, keyFeatures, category: Category._id });
         await book.save();
-        const bookCard = new BookCard({ title, author, image: publicId, badges, rating, pricing, book: book._id });
+        const bookCard = new BookCard({ title, author, image: publicId, badges, rating, pricing: pricing, book: book._id });
         await bookCard.save();
         res.status(status.OK).json({
             message: "Book added successfully"
@@ -86,14 +89,13 @@ exports.updateBook = async (req, res) => {
                 message: "Book not found"
             });
         }
-        const Books = { ...req.body };
+        const Books = JSON.parse(req.body.data);
         if (req.file) {
             Books.image = req.file.filename;
         }
         const updatedBook = await Book.findByIdAndUpdate(id, Books, { new: true, runValidators: true });
         return res.status(status.OK).json({
-            message: "Book updated successfully",
-            data: updatedBook
+            message: "Book updated successfully"
         })
     }
     catch (err) {

@@ -7,7 +7,8 @@ const { upload } = require("../../utils/CloudinaryConfig");
 router.post("/add", auth, isadmin, upload.single("resume"), instructorControl.addInstructor);
 router.get("/all", auth, isadmin, instructorControl.allInstructors);
 router.get("/single/:id", auth, isadmin, instructorControl.singleInstructor);
-router.put("/update/:id", auth, isadmin, instructorControl.updateInstructorStatus);
+router.put("/applicationStatus/:id", auth, isadmin, instructorControl.updateapplicationStatus);
+router.put("/employMentStatus/:id", auth, isadmin, instructorControl.updateemployMentStatus);
 router.delete("/delete/:id", auth, isadmin, instructorControl.deleteInstructor);
 router.get("/applicationchart", auth, isadmin, instructorControl.applicationChart);
 
