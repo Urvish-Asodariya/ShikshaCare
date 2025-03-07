@@ -59,8 +59,8 @@ const userSchema = new mongoose.Schema({
     },
     status: {
         type: String,
-        enum: ["activate", "deactivate", "block"],
-        default: "activate"
+        enum: ["Active", "Inactive", "Block"],
+        default: "Active"
     },
     otp: {
         type: Number

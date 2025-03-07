@@ -200,7 +200,7 @@ exports.updateapplicationStatus = async (req, res) => {
         if (req.query.status === 'Approved') {
             const interviewDate = getFutureDate(7);
             const resultsDate = getFutureDate(15);
-            await sendResponseEmail(email, name, interviewDate, resultsDate);
+            sendResponseEmail(email, name, interviewDate, resultsDate);
         }
         const updatedInstructor = await Instructor.findByIdAndUpdate(instructorId, { $set: { applicationStatus: req.query.status } }, { new: true, runValidators: true });
         if (!updatedInstructor) {

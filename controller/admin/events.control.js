@@ -2,6 +2,7 @@ const Event = require('../../models/events.model');
 const EventCard = require('../../models/eventCard.model');
 const eventCategory = require("../../models/eventCategory.model");
 const { status } = require("http-status");
+const Sell = require("../../models/sells.model");
 const { getFileUrl } = require("../../utils/CloudinaryConfig");
 
 exports.addEvent = async (req, res) => {
@@ -118,6 +119,47 @@ exports.deleteEvent = async (req, res) => {
             message: err.message
         });
     };
+};
+
+exports.enrollChart = async (req, res) => {
+    try {
+        const sells = await Sell.aggregate([
+            { $match: { type: "Event" } },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    total: { $sum: "$quantity" }
+                }
+            },
+            {
+                $sort: { _id: -1 }
+            },
+            {
+                $limit: 6,
+            },
+            // {
+            //     $skip: 1
+            // }
+        ]);
+        sells.map((item) => {
+            const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+            item._id = months[item._id];
+        })
+        if (sells === 0) {
+            return res.status(status.NOT_FOUND).json({
+                message: "No sales found"
+            });
+        }
+        return res.status(status.OK).json({
+            message: "Last 5 month sales fetched successfully",
+            data: sells
+        });
+    } catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
 };
 
 exports.categoryChart = async (req, res) => {

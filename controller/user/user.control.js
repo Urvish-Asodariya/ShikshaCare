@@ -112,7 +112,7 @@ exports.login = async (req, res) => {
             return res.status(status.UNAUTHORIZED).json({
                 message: "Invalid password"
             });
-        } else if (user.status === "block") {
+        } else if (user.status === "Block") {
             return res.status(status.UNAUTHORIZED).json({
                 message: "User is blocked"
             });
