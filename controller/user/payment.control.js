@@ -61,22 +61,6 @@ exports.billing = async (req, res) => {
         }
         user.orderId = paymentData.orderId;
         await user.save();
-        const existingSell = await Sells.findOne({ name: itemName });
-        if (!existingSell) {
-            await new Sells({
-                name: itemName,
-                quantity: 1,
-                type: itemType,
-                price: price,
-                item: id
-            }).save();
-        } else {
-            await Sells.findByIdAndUpdate(
-                existingSell._id,
-                { $inc: { quantity: 1, price: price } },
-                { new: true, runValidators: true }
-            );
-        }
         const newPayment = new Payment({
             user: userId,
             item: id,
@@ -86,10 +70,6 @@ exports.billing = async (req, res) => {
             status: "pending"
         });
         await newPayment.save();
-        if (field && !user[field].includes(id)) {
-            user[field].push(id);
-            await user.save();
-        }
         res.status(status.OK).json({
             message: "Payment order created successfully",
             paymentResponse: paymentData

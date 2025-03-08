@@ -213,8 +213,8 @@ exports.cards = async (req, res) => {
         const Employee = await Instructor.find({ employMentStatus: "employed" });
 
         //user
-        const active = await User.find({ status: "activate" });
-        const inactive = await User.find({ status: { $in: ["deactivate", "block"] } });
+        const active = await User.find({ status: "Active" });
+        const inactive = await User.find({ status: { $in: ["Inactive", "Block"] } });
         const newUsers = await User.find({
             createdAt: {
                 $gte: new Date(new Date().setDate(new Date().getDate() - 7))

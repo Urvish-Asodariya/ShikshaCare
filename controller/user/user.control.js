@@ -64,7 +64,6 @@ const sendWelcomeEmail = async (userEmail) => {
 
 exports.register = async (req, res) => {
     try {
-        console.log(req.body);
         const { firstName, lastName, email, password, mobileNumber } = req.body;
         if (email) {
             const existingUser = await User.findOne({ email });
