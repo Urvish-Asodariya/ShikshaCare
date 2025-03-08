@@ -208,9 +208,9 @@ exports.cards = async (req, res) => {
 
         //instructor
         const totalApplication = await Instructor.countDocuments();
-        const approvedApplication = await Instructor.find({ applicationStatus: "approved" });
-        const rejectedApplication = await Instructor.find({ applicationStatus: "rejected" });
-        const Employee = await Instructor.find({ employMentStatus: "employed" });
+        const approvedApplication = await Instructor.find({ applicationStatus: "Approved" });
+        const rejectedApplication = await Instructor.find({ applicationStatus: "Rejected" });
+        const Employee = await Instructor.find({ employMentStatus: "Employed" });
 
         //user
         const active = await User.find({ status: "Active", role: "Student" });
