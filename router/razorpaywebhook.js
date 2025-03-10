@@ -7,6 +7,80 @@ const User = require("../models/user.model");
 const Course = require("../models/course.model");
 const Book = require("../models/book.model");
 const Event = require("../models/events.model");
+const nodemailer = require("nodemailer");
+
+const sendSuccessEmail = async (userEmail, type, details) => {
+    try {
+        const transporter = nodemailer.createTransport({
+            service: "gmail",
+            auth: {
+                user: process.env.EMAIL,
+                pass: process.env.PASSWORD
+            }
+        });
+
+        const emailTemplates = {
+            Course: {
+                subject: "🎉 Course Enrollment Successful!",
+                message: `Congratulations! You have successfully enrolled in <strong>${details.name}</strong>. Start your learning journey now!`
+            },
+            Book: {
+                subject: "📚 Book Purchase Confirmation",
+                message: `Your purchase of the book <strong>${details.name}</strong> has been confirmed. Happy reading!`
+            },
+            Event: {
+                subject: "🎟️ Event Registration Confirmed!",
+                message: `You are successfully registered for the event <strong>${details.name}</strong>. See you there!`
+            }
+        };
+
+        if (!emailTemplates[type]) {
+            throw new Error("Invalid email type.");
+        }
+
+        const { subject, message } = emailTemplates[type];
+
+        const mailOptions = {
+            from: process.env.EMAIL,
+            to: userEmail,
+            subject,
+            html: `<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${subject}</title>
+    <style>
+        body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 0; }
+        .email-container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+        .header { background-color: #4CAF50; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: bold; }
+        .content { padding: 20px; text-align: left; }
+        .content p { font-size: 16px; margin: 10px 0; }
+        .footer { background-color: #f1f1f1; text-align: center; padding: 10px; font-size: 14px; color: #555; }
+    </style>
+</head>
+<body>
+    <div class="email-container">
+        <div class="header">${subject}</div>
+        <div class="content">
+            <p>Hello,</p>
+            <p>${message}</p>
+            <p>Thank you for choosing ShikshaCare!</p>
+        </div>
+        <div class="footer">
+            <p>&copy; 2025 ShikshaCare. All rights reserved.</p>
+        </div>
+    </div>
+</body>
+</html>`
+        };
+
+        await transporter.sendMail(mailOptions);
+        console.log("Success email sent successfully!");
+    } catch (error) {
+        console.error("Error sending success email:", error);
+    }
+};
 
 router.post('/razorpay-webhook', async (req, res) => {
     try {
@@ -103,6 +177,7 @@ router.post('/razorpay-webhook', async (req, res) => {
                 console.log('✅ Sell record updated');
             }
 
+            await sendSuccessEmail(user.email, itemType, { name: itemName });
             return res.status(200).json({ success: true, message: 'Payment successful, user updated' });
         }
 

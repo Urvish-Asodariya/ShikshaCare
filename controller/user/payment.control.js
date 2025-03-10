@@ -4,7 +4,6 @@ const Event = require("../../models/events.model");
 const Course = require("../../models/course.model");
 const Enrollform = require("../../models/enrollForm.model");
 const Book = require("../../models/book.model");
-const Sells = require("../../models/sells.model");
 const { payment } = require("../../utils/payment");
 const { status } = require("http-status");
 

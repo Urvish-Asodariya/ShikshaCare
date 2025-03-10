@@ -1,4 +1,3 @@
-const Payment = require("../../models/payment.model");
 const User = require("../../models/user.model");
 const Event = require("../../models/events.model");
 const eventCategory = require("../../models/eventCategory.model");
@@ -168,7 +167,7 @@ exports.recentActivities = async (req, res) => {
 exports.cards = async (req, res) => {
     try {
         //dashboard
-        const totalUser = await User.countDocuments();
+        const totalUser = await User.countDocuments({ role: "Student" });
         const totalBook = await Book.countDocuments();
         const totalEvent = await Event.countDocuments();
         const totalCourse = await Course.countDocuments();
@@ -208,13 +207,13 @@ exports.cards = async (req, res) => {
 
         //instructor
         const totalApplication = await Instructor.countDocuments();
-        const approvedApplication = await Instructor.find({ applicationStatus: "approved" });
-        const rejectedApplication = await Instructor.find({ applicationStatus: "rejected" });
-        const Employee = await Instructor.find({ employMentStatus: "employed" });
+        const approvedApplication = await Instructor.find({ applicationStatus: "Approved" });
+        const rejectedApplication = await Instructor.find({ applicationStatus: "Rejected" });
+        const Employee = await Instructor.find({ employMentStatus: "Employed" });
 
         //user
-        const active = await User.find({ status: "Active" });
-        const inactive = await User.find({ status: { $in: ["Inactive", "Block"] } });
+        const active = await User.find({ status: "Active", role: "Student" });
+        const inactive = await User.find({ status: { $in: ["Inactive", "Block"] }, role: "Student" });
         const newUsers = await User.find({
             createdAt: {
                 $gte: new Date(new Date().setDate(new Date().getDate() - 7))
