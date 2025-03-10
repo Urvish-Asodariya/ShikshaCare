@@ -92,44 +92,38 @@ router.post('/razorpay-webhook', async (req, res) => {
             .digest('hex');
 
         if (shasum !== req.headers['x-razorpay-signature']) {
-            console.error('❌ Invalid signature');
             return res.status(400).json({ success: false, message: 'Invalid signature' });
         }
 
         const event = req.body.event;
         const payload = req.body.payload;
 
-        console.log('✅ Webhook Received:', event);
 
         if (event === 'payment.captured') {
             const orderId = payload.payment.entity.order_id;
 
-            console.log('🔍 Searching for Payment with Order ID:', orderId);
 
             // Find payment record
             const paymentRecord = await Payment.findOne({ orderId });
             if (!paymentRecord) {
-                console.error('❌ Payment record not found for Order ID:', orderId);
                 return res.status(404).json({ success: false, message: 'Payment record not found' });
             }
 
             // Find user by payment record
             const user = await User.findById(paymentRecord.user);
             if (!user) {
-                console.error('❌ User not found for Order ID:', orderId);
                 return res.status(404).json({ success: false, message: 'User not found for this order' });
             }
 
-            // ✅ Update Payment Status
+            //  Update Payment Status
             paymentRecord.status = "completed";
             await paymentRecord.save();
-            console.log('✅ Payment status updated to "completed"');
 
             const { item, itemType, price } = paymentRecord;
             let field = null;
             let itemName = '';
 
-            // ✅ Find the purchased item
+            //  Find the purchased item
             if (itemType === "Course") {
                 const course = await Course.findById(item);
                 if (course) {
@@ -150,14 +144,13 @@ router.post('/razorpay-webhook', async (req, res) => {
                 }
             }
 
-            // ✅ Update User's Purchased Items
+            //  Update User's Purchased Items
             if (field && !user[field].includes(item)) {
                 user[field].push(item);
                 await user.save();
-                console.log(`✅ User updated: Added ${itemType} (${itemName}) to ${field}`);
             }
 
-            // ✅ Update Sell Records
+            //  Update Sell Records
             const existingSell = await Sells.findOne({ name: itemName });
             if (!existingSell) {
                 await new Sells({
@@ -167,14 +160,12 @@ router.post('/razorpay-webhook', async (req, res) => {
                     price: price,
                     item: item
                 }).save();
-                console.log('✅ New Sell record created');
             } else {
                 await Sells.findByIdAndUpdate(
                     existingSell._id,
                     { $inc: { quantity: 1 } },
                     { new: true, runValidators: true }
                 );
-                console.log('✅ Sell record updated');
             }
 
             await sendSuccessEmail(user.email, itemType, { name: itemName });
@@ -182,7 +173,7 @@ router.post('/razorpay-webhook', async (req, res) => {
         }
 
     } catch (error) {
-        console.error('❌ Error processing webhook:', error);
+        console.error(' Error processing webhook:', error);
         return res.status(500).json({ success: false, message: 'Webhook processing failed' });
     }
 });
