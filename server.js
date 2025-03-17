@@ -37,10 +37,16 @@ app.use("/user/userreview", require("./router/user/userReview.route"));
 app.use("/user/enrollform", require("./router/user/enrollForm.route"));
 app.use("/user/studentsuccess", require("./router/user/studentSuccess.route"));
 
+
 //cron job
-cron.schedule('0 0 9 * * *', () => {
-    sendEventReminderEmails();
-    console.log('running a task every day at 9:00:00 AM');
+cron.schedule("0 0 9 * * *", async () => {
+    console.log("Running event reminder email task at 9:00 AM...");
+    try {
+        await sendEventReminderEmails();
+        console.log("Event reminder emails sent successfully.");
+    } catch (error) {
+        console.error("Error in scheduled event reminder:", error);
+    }
 });
 
 //admin

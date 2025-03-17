@@ -4,10 +4,10 @@ const studentSuccessControl = require("../../controller/admin/studentSuccess.con
 const { auth, isadmin } = require("../../middleware/auth");
 const { upload } = require("../../utils/CloudinaryConfig");
 
-router.post("/add", upload.single("image"), studentSuccessControl.addStudent);
-router.get("/all", studentSuccessControl.allStudent);
+router.post("/add", auth, isadmin, upload.single("image"), studentSuccessControl.addStudent);
+router.get("/all", auth, isadmin, studentSuccessControl.allStudent);
 router.get("/single/:id", studentSuccessControl.singleStudent);
-router.put("/update/:id", upload.single("image"), studentSuccessControl.updateStudent);
-router.delete("/delete/:id", studentSuccessControl.deleteStudent);
+router.put("/update/:id", auth, isadmin, upload.single("image"), studentSuccessControl.updateStudent);
+router.delete("/delete/:id", auth, isadmin, studentSuccessControl.deleteStudent);
 
 module.exports = router;

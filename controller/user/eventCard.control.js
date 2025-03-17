@@ -57,21 +57,26 @@ const transporter = nodemailer.createTransport({
     }
 });
 
-exports.sendEventReminderEmails = async (req, res) => {
+exports.sendEventReminderEmails = async () => {
     try {
         const currentTime = new Date();
-        const reminderTime = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
+        const reminderTime = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000); 
         const events = await Event.find({ "notes.date": { $gte: currentTime, $lte: reminderTime } });
+
         if (events.length === 0) {
             console.log("No events scheduled for tomorrow.");
             return;
         }
+
         for (const event of events) {
+            // Fetch users assigned to the event
             const users = await User.find({ event: event._id });
+
             if (users.length === 0) {
                 console.log(`No users enrolled for event: ${event.title}`);
                 continue;
             }
+
             for (const user of users) {
                 const mailOptions = {
                     from: process.env.EMAIL,
@@ -79,54 +84,52 @@ exports.sendEventReminderEmails = async (req, res) => {
                     subject: `Reminder: Upcoming Event - ${event.title}`,
                     html: `
                         <!DOCTYPE html>
-        <html lang="en">
-        <head>
-            <meta charset="UTF-8">
-            <meta name="viewport" content="width=device-width, initial-scale=1.0">
-            <title>Event Reminder</title>
-            <style>
-                body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 0; }
-                .email-container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-                .header { background-color: #4CAF50; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: bold; }
-                .content { padding: 20px; text-align: left; }
-                .content p { font-size: 16px; margin: 10px 0; }
-                .event-details { background-color: #f1f1f1; padding: 15px; border-radius: 5px; margin-top: 10px; }
-                .event-details strong { color: #4CAF50; }
-                .footer { background-color: #f1f1f1; text-align: center; padding: 10px; font-size: 14px; color: #555; }
-            </style>
-        </head>
-        <body>
-            <div class="email-container">
-                <div class="header">
-                    Reminder: Upcoming Event
-                </div>
-                <div class="content">
-                    <p>Dear <strong>${user.firstName}</strong>,</p>
-                    <p>This is a friendly reminder that you have an upcoming event.</p>
-                    <div class="event-details">
-                        <p><strong>Event:</strong> ${event.title}</p>
-                        <p><strong>Date:</strong> ${event.notes.date.toDateString()}</p>
-                        <p><strong>Time:</strong> ${event.notes.time}</p>
-                    </div>
-                    <p>We are excited to see you there! If you have any questions, feel free to contact us.</p>
-                    <p>For more details, visit <a href="https://shikshacare.com" target="_blank">ShikshaCare</a>.</p>
-                </div>
-                <div class="footer">
-                    <p>&copy; 2025 ShikshaCare. All rights reserved.</p>
-                </div>
-            </div>
-        </body>
-        </html>
+                        <html lang="en">
+                        <head>
+                            <meta charset="UTF-8">
+                            <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                            <title>Event Reminder</title>
+                            <style>
+                                body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 0; }
+                                .email-container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
+                                .header { background-color: #4CAF50; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: bold; }
+                                .content { padding: 20px; text-align: left; }
+                                .content p { font-size: 16px; margin: 10px 0; }
+                                .event-details { background-color: #f1f1f1; padding: 15px; border-radius: 5px; margin-top: 10px; }
+                                .event-details strong { color: #4CAF50; }
+                                .footer { background-color: #f1f1f1; text-align: center; padding: 10px; font-size: 14px; color: #555; }
+                            </style>
+                        </head>
+                        <body>
+                            <div class="email-container">
+                                <div class="header">
+                                    Reminder: Upcoming Event
+                                </div>
+                                <div class="content">
+                                    <p>Dear <strong>${user.firstName}</strong>,</p>
+                                    <p>This is a friendly reminder that you have an upcoming event.</p>
+                                    <div class="event-details">
+                                        <p><strong>Event:</strong> ${event.title}</p>
+                                        <p><strong>Date:</strong> ${new Date(event.notes.date).toDateString()}</p>
+                                        <p><strong>Time:</strong> ${event.notes.time}</p>
+                                    </div>
+                                    <p>We are excited to see you there! If you have any questions, feel free to contact us.</p>
+                                    <p>For more details, visit our website <b>ShikshaCare</b></p>
+                                </div>
+                                <div class="footer">
+                                    <p>&copy; 2025 ShikshaCare. All rights reserved.</p>
+                                </div>
+                            </div>
+                        </body>
+                        </html>
                     `
                 };
+
                 await transporter.sendMail(mailOptions);
                 console.log(`Reminder email sent to ${user.email} for event: ${event.title}`);
             }
         }
-    }
-    catch (err) {
-        return res.status(status.INTERNAL_SERVER_ERROR).json({
-            message: err.message
-        });
+    } catch (err) {
+        console.error("Error sending reminder emails:", err);
     }
 };

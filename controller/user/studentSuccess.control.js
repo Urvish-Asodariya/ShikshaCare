@@ -4,7 +4,14 @@ const { getFileUrl } = require("../../utils/CloudinaryConfig");
 
 exports.allStudent = async (req, res) => {
     try {
-        const students = await studentSuccess.find().limit(3).sort({ createdAt: -1 });
+        const limit = 3;
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit;
+        const total = await studentSuccess.countDocuments();
+        const students = await studentSuccess.aggregate([
+            { $skip: skip },
+            { $limit: limit }
+        ]);
         if (students.length == 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No student found"
@@ -15,7 +22,8 @@ exports.allStudent = async (req, res) => {
         });
         return res.status(status.OK).json({
             message: "Students found",
-            data: students
+            data: students,
+            total: total
         });
     }
     catch (err) {

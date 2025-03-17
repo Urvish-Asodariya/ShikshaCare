@@ -268,37 +268,37 @@ exports.deleteInstructor = async (req, res) => {
 
 exports.applicationChart = async (req, res) => {
     try {
+        const fiveMonthsAgo = new Date();
+        fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - 5);
         const applications = await Instructor.aggregate([
             {
-                $group: {
-                    _id: { $month: "$createdAt" },
-                    total: { $sum: "$_id" }
+                $match: {
+                    createdAt: { $gte: fiveMonthsAgo }
                 }
             },
             {
-                $sort: { _id: -1 }
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    totalApplications: { $sum: 1 }
+                }
             },
-            {
-                $limit: 6,
-            },
-            // {
-            //     $skip: 1
-            // }
+            { $sort: { _id: -1 } }
         ]);
-        applications.map((item) => {
-            const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            item._id = months[item._id];
-        })
-        if (applications === 0) {
+        const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        applications.forEach((item) => {
+            item.month = months[item._id];
+        });
+        if (applications.length === 0) {
             return res.status(status.NOT_FOUND).json({
-                message: "No instructor found"
+                message: "No applications found"
             });
         }
         return res.status(status.OK).json({
-            message: "Last 5 month data fetched successfully",
+            message: "Last 5 months' application data fetched successfully",
             data: applications
         });
+
     } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message

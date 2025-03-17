@@ -94,6 +94,19 @@ exports.updateBook = async (req, res) => {
             Books.image = req.file.filename;
         }
         const updatedBook = await Book.findByIdAndUpdate(id, Books, { new: true, runValidators: true });
+        await BookCard.findByIdAndUpdate({ book: id },
+            {
+                $set: {
+                    title: updatedBook.title,
+                    author: updatedBook.author,
+                    image: updatedBook.image,
+                    badges: updatedBook.badges,
+                    rating: updatedBook.rating,
+                    pricing: updatedBook.pricing
+                }
+            },
+            { new: true, runValidators: true }
+        );
         return res.status(status.OK).json({
             message: "Book updated successfully"
         })
@@ -129,8 +142,15 @@ exports.deleteBook = async (req, res) => {
 
 exports.enrollChart = async (req, res) => {
     try {
+        const fiveMonthsAgo = new Date();
+        fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - 5);
         const sells = await Sell.aggregate([
-            { $match: { type: "Book" } },
+            {
+                $match: {
+                    type: "Book",
+                    createdAt: { $gte: fiveMonthsAgo }
+                }
+            },
             {
                 $group: {
                     _id: { $month: "$createdAt" },
@@ -139,28 +159,23 @@ exports.enrollChart = async (req, res) => {
             },
             {
                 $sort: { _id: -1 }
-            },
-            {
-                $limit: 6,
-            },
-            // {
-            //     $skip: 1
-            // }
+            }
         ]);
-        sells.map((item) => {
-            const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            item._id = months[item._id];
-        })
-        if (sells === 0) {
+        const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        sells.forEach((item) => {
+            item.month = months[item._id];
+        });
+        if (sells.length === 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No sales found"
             });
         }
         return res.status(status.OK).json({
-            message: "Last 5 month sales fetched successfully",
+            message: "Last 5 months' sales fetched successfully",
             data: sells
         });
+
     } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message

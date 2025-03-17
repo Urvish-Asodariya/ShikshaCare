@@ -4,34 +4,40 @@ const { getFileUrl } = require("../../utils/CloudinaryConfig");
 
 exports.addStudent = async (req, res) => {
     try {
-        const { name, position, quote, achievements } = req.body;
+        let { data } = req.body;
+        if (!data) {
+            return res.status(400).json({ message: "No data received" });
+        }
+        const parsedData = JSON.parse(data);
+        const { name, position, quote, achievements } = parsedData;
         let achievementsData;
         if (Array.isArray(achievements)) {
-            sizeData = achievements;
+            achievementsData = achievements;
         } else if (typeof achievements === "string") {
             try {
                 achievementsData = JSON.parse(achievements);
             } catch (error) {
-                achievementsData = achievements.split(',').map(achievement => achievement.trim());
+                achievementsData = achievements.split(',').map((achievement) => achievement.trim());
             }
         }
         const publicId = req.file ? req.file.filename : null;
-        const student = new studentSuccess({ image: publicId, name, position, quote, achievements: achievementsData });
+        const student = new studentSuccess({
+            image: publicId,
+            name,
+            position,
+            quote,
+            achievements: achievementsData
+        });
         await student.save();
-        return res.status(status.OK).json({
-            message: "Student added successfully"
-        });
-    }
-    catch (err) {
-        return res.status(status.INTERNAL_SERVER_ERROR).json({
-            message: err.message
-        });
+        return res.status(200).json({ message: "Student added successfully", student });
+    } catch (err) {
+        return res.status(500).json({ message: err.message });
     }
 };
 
 exports.allStudent = async (req, res) => {
     try {
-        const students = await studentSuccess.find().limit(3);
+        const students = await studentSuccess.find().sort({ createdAt: -1 });
         if (students.length == 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No student found"
@@ -76,14 +82,14 @@ exports.singleStudent = async (req, res) => {
 
 exports.updateStudent = async (req, res) => {
     try {
-        const studentId = req.params.id;
-        const student = await studentSuccess.findById({ _id: studentId });
+        const student = await studentSuccess.findById({ _id: req.params.id });
         if (!student) {
             return res.status(status.NOT_FOUND).json({
                 message: "Student not found"
             });
         };
-        const updateData = { ...req.body };
+        const updateData = JSON.parse(req.body.data);
+        console.log(updateData)
         if (req.file) {
             updateData.image = req.file.filename;
         }

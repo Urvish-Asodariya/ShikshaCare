@@ -78,7 +78,7 @@ exports.register = async (req, res) => {
         const day = String(date.getDate()).padStart(2, '0');
         const month = String(date.getMonth() + 1);
         const year = date.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
+        const formattedDate = `${year}-${month}-${day}`;
         const publicId = req.file?.filename || null;
         const user = new User({ firstName, lastName, email, password: hashedPassword, dateOfBirth: null, mobileNumber, gender: null, image: publicId, city: null, state: null, joiningdate: formattedDate, batch: year });
         await user.save();
@@ -116,6 +116,7 @@ exports.login = async (req, res) => {
                 message: "User is blocked"
             });
         } else {
+            await User.findByIdAndUpdate({ _id: user._id }, { $set: { status: "Active" } }, { new: true, runValidators: true });
             const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "1h" });
             const option = {
                 httpOnly: true,
@@ -124,7 +125,9 @@ exports.login = async (req, res) => {
                 sameSite: "strict"
             };
             res.cookie("TOKEN", token, option);
-            await sendWelcomeEmail(email);
+            if (user.role == "Student") {
+                await sendWelcomeEmail(email);
+            }
             return res.status(status.OK).json({
                 message: "User logged in successfully",
                 token: token,

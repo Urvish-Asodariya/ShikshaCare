@@ -27,6 +27,7 @@ exports.allCards = async (req, res) => {
         });
     }
     catch (err) {
+        console.log(err);
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message
         });

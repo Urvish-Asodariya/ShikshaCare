@@ -13,7 +13,6 @@ const userSchema = new mongoose.Schema({
     },
     password: {
         type: String,
-        required: true
     },
     dateOfBirth: {
         type: String
@@ -54,7 +53,7 @@ const userSchema = new mongoose.Schema({
     },
     role: {
         type: String,
-        enum: ['Student', 'Admin', 'Teacher'],
+        enum: ['Student', 'Admin'],
         default: 'Student',
     },
     status: {
@@ -64,6 +63,22 @@ const userSchema = new mongoose.Schema({
     },
     otp: {
         type: Number
+    },
+    qualifications: [
+        {
+            title: {
+                type: String
+            },
+            institute: {
+                type: String
+            },
+            year: {
+                type: String
+            }
+        }
+    ],
+    expertise: {
+        type: [String]
     }
 }, {
     timestamps: true,

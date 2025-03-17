@@ -9,7 +9,7 @@ const validator = require("validator");
 
 exports.addUser = async (req, res) => {
     try {
-        const { firstName, lastName, email, password, dateOfBirth, mobileNumber, gender, city, state } = req.body;
+        const { firstName, lastName, email, password, dateOfBirth, mobileNumber, gender, city, state, joiningDate } = req.body;
         if (!validator.isEmail(email)) {
             return res.status(status.BAD_REQUEST).json({
                 message: "Invalid email format"
@@ -24,19 +24,25 @@ exports.addUser = async (req, res) => {
             }
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        const date = new Date();
-        const day = String(date.getDate()).padStart(2, '0');
-        const month = String(date.getMonth() + 1);
-        const year = date.getFullYear();
-        const formattedDate = `${day}/${month}/${year}`;
+        let joiningdate;
+        if (!joiningDate) {
+            const date = new Date();
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1);
+            const year = date.getFullYear();
+            const formattedDate = `${day}-${month}-${year}`;
+            joiningdate = formattedDate
+        }
+        joiningdate = joiningDate;
         const publicId = req.file?.filename || null;
-        const user = new User({ firstName, lastName, email, password: hashedPassword, dateOfBirth, mobileNumber, gender, image: publicId, city, state, joiningdate: formattedDate, batch: year });
+        const user = new User({ firstName, lastName, email, password: hashedPassword, dateOfBirth, mobileNumber, gender, image: publicId, city, state, joiningdate, batch: year });
         await user.save();
         return res.status(status.OK).json({
             message: "User created successfully"
         });
     }
     catch (err) {
+        console.log(err)
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message,
         });
@@ -45,7 +51,7 @@ exports.addUser = async (req, res) => {
 
 exports.allUser = async (req, res) => {
     try {
-        const users = await User.find({ role: "Student" });
+        const users = await User.find({ role: "Student" }).sort({ createdAt: -1 });
         if (users.length == 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No user found"
@@ -158,37 +164,38 @@ exports.deleteUser = async (req, res) => {
 
 exports.newUserChart = async (req, res) => {
     try {
-        const newusers = await User.aggregate([
+        const fiveMonthsAgo = new Date();
+        fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - 5);
+        const newUsers = await User.aggregate([
             {
-                $group: {
-                    _id: { $month: "$createdAt" },
-                    total: { $sum: "$_id" }
+                $match: {
+                    createdAt: { $gte: fiveMonthsAgo } 
                 }
             },
             {
-                $sort: { _id: -1 }
+                $group: {
+                    _id: { $month: "$createdAt" }, 
+                    totalUsers: { $sum: 1 } 
+                }
             },
-            {
-                $limit: 6,
-            },
-            // {
-            //     $skip: 1
-            // }
+            { $sort: { _id: -1 } } 
         ]);
-        newusers.map((item) => {
-            const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            item._id = months[item._id];
-        })
-        if (newusers === 0) {
+        const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        newUsers.forEach((item) => {
+            item.month = months[item._id]; 
+        });
+        if (newUsers.length === 0) {
             return res.status(status.NOT_FOUND).json({
-                message: "No instructor found"
+                message: "No users found"
             });
         }
+
         return res.status(status.OK).json({
-            message: "Last 5 month data fetched successfully",
-            data: newusers
+            message: "Last 5 months' user data fetched successfully",
+            data: newUsers
         });
+
     } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message

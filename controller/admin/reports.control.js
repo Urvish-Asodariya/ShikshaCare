@@ -6,6 +6,7 @@ const courseCategory = require("../../models/courseCategory.model");
 const Course = require("../../models/course.model");
 const Instructor = require("../../models/instructor.model");
 const Sells = require("../../models/sells.model");
+const Payment = require("../../models/payment.model");
 const Book = require("../../models/book.model");
 const { status } = require("http-status");
 
@@ -126,7 +127,7 @@ exports.categorydata = async (req, res) => {
 
 exports.recentActivities = async (req, res) => {
     try {
-        const recentUsers = await User.find().sort({ createdAt: -1 }).limit(5);
+        const recentUsers = await User.find({ role: "Student" }).sort({ createdAt: -1 }).limit(5);
         const recentBooks = await Book.find().sort({ createdAt: -1 }).limit(5);
         const recentEvents = await Event.find().sort({ createdAt: -1 }).limit(5);
         const recentCourses = await Course.find().sort({ createdAt: -1 }).limit(5);
@@ -134,31 +135,31 @@ exports.recentActivities = async (req, res) => {
             ...recentUsers.map(user => ({
                 type: "User",
                 message: `New user registration: ${user.firstName} ${user.lastName}`,
-                timestamp: user.createdAt
+                timestamp: new Date(user.createdAt)
             })),
             ...recentBooks.map(book => ({
                 type: "Book",
                 message: `New book added: "${book.title}"`,
-                timestamp: book.createdAt
+                timestamp: new Date(book.createdAt)
             })),
             ...recentEvents.map(event => ({
                 type: "Event",
                 message: `New event scheduled: "${event.title}"`,
-                timestamp: event.createdAt
+                timestamp: new Date(event.createdAt)
             })),
             ...recentCourses.map(course => ({
                 type: "Course",
                 message: `New course added: "${course.courseDetails.title}"`,
-                timestamp: course.createdAt
+                timestamp: new Date(course.createdAt)
             }))
         ];
-        activities.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        res.status(200).json({
+        activities.sort((a, b) => b.timestamp - a.timestamp);
+        res.status(status.OK).json({
             message: "Recent activities fetched successfully",
             activities
         });
     } catch (err) {
-        return res.status(500).json({
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message
         });
     }
@@ -183,8 +184,15 @@ exports.cards = async (req, res) => {
         //books
         const sixMonthsAgo = new Date();
         sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
-        const recentPublished = await Book.countDocuments({
-            "details.publicationDate": { $gte: sixMonthsAgo.toISOString().split("T")[0] }
+        const parsePublicationDate = (dateStr) => {
+            const date = new Date(dateStr + " 01");
+            return date;
+        };
+        const books = await Book.find({});
+        const recentBooks = books.filter(book => {
+            if (!book.details.publicationDate) return false;
+            const pubDate = parsePublicationDate(book.details.publicationDate);
+            return pubDate >= sixMonthsAgo;
         });
         const bookCategories = await bookCategory.countDocuments();
         const bookRevenue = await Sells.aggregate([
@@ -207,9 +215,24 @@ exports.cards = async (req, res) => {
 
         //instructor
         const totalApplication = await Instructor.countDocuments();
-        const approvedApplication = await Instructor.find({ applicationStatus: "Approved" });
+        const approvedApplication = await Instructor.find({
+            $and: [
+                { applicationStatus: "Approved" },
+                { employMentStatus: "Unemployed" }
+            ]
+        });
         const rejectedApplication = await Instructor.find({ applicationStatus: "Rejected" });
-        const Employee = await Instructor.find({ employMentStatus: "Employed" });
+        const Employee = await Instructor.find({
+            $and: [
+                { applicationStatus: "Approved" },
+                {
+                    $or: [
+                        { employMentStatus: "Employed" },
+                        { employMentStatus: "Freelancer" }
+                    ]
+                }
+            ]
+        });
 
         //user
         const active = await User.find({ status: "Active", role: "Student" });
@@ -219,6 +242,15 @@ exports.cards = async (req, res) => {
                 $gte: new Date(new Date().setDate(new Date().getDate() - 7))
             }
         });
+
+        //order
+        const completedPayments = await Payment.find({ status: 'completed' });
+        const totalRevenue = completedPayments.reduce((sum, payment) => sum + payment.price, 0);
+        const totalOrders = completedPayments.length;
+        const averageOrderValue = totalOrders > 0 ? (totalRevenue / totalOrders).toFixed(2) : 0;
+        const allOrdersCount = await Payment.countDocuments();
+        const conversionRate = allOrdersCount > 0 ? ((totalOrders / allOrdersCount) * 100).toFixed(2) : 0;
+
         return res.status(status.OK).json({
             message: "Data fetched successfully",
             data: {
@@ -231,7 +263,7 @@ exports.cards = async (req, res) => {
                 newestCourse: newestCourse,
                 courseRevenue: courseRevenue[0]?.totalRevenue || 0,
 
-                recentPublished: recentPublished,
+                recentPublished: recentBooks.length,
                 bookCategories: bookCategories,
                 bookRevenue: bookRevenue[0]?.totalRevenue || 0,
 
@@ -246,11 +278,58 @@ exports.cards = async (req, res) => {
 
                 activeUser: active.length,
                 inactiveUser: inactive.length,
-                newUsers: newUsers.length
+                newUsers: newUsers.length,
+
+                totalRevenue: totalRevenue,
+                totalOrders: totalOrders,
+                averageOrderValue: parseInt(averageOrderValue),
+                conversionRate: conversionRate
             }
         })
     }
     catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+};
+
+exports.growthChart = async (req, res) => {
+    try {
+        const fiveMonthsAgo = new Date();
+        fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - 5);
+        const sells = await Sells.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: fiveMonthsAgo }
+                }
+            },
+            {
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    total: { $sum: "$quantity" }
+                }
+            },
+            {
+                $sort: { _id: -1 }
+            }
+        ]);
+        const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        sells.forEach((item) => {
+            item.month = months[item._id];
+        });
+        if (sells.length === 0) {
+            return res.status(status.NOT_FOUND).json({
+                message: "No sales found"
+            });
+        }
+        return res.status(status.OK).json({
+            message: "Last 5 months' sales fetched successfully",
+            data: sells
+        });
+
+    } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message
         });

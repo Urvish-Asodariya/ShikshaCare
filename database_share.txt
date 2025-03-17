@@ -1,0 +1,4 @@
+mongodump --uri="mongodb://localhost:27017/Portal" --out=backup_folder
+
+
+mongorestore --uri="mongodb://localhost:27017/" backup_folder

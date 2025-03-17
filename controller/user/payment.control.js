@@ -1,4 +1,4 @@
-const Payment = require("../../models/payment.model");
+const PaymentModel = require("../../models/payment.model");
 const User = require("../../models/user.model");
 const Event = require("../../models/events.model");
 const Course = require("../../models/course.model");
@@ -60,7 +60,7 @@ exports.billing = async (req, res) => {
         }
         user.orderId = paymentData.orderId;
         await user.save();
-        const newPayment = new Payment({
+        const newPayment = new PaymentModel({
             user: userId,
             item: id,
             itemType,

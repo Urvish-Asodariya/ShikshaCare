@@ -1,0 +1,565 @@
+course =
+const courseData = [
+  new CourseData({
+    courseDetails: {
+      title: "Full Stack Web Development",
+      instructor: "John Doe",
+      duration: "16 weeks",
+      level: "Beginner",
+      rating: 4.8,
+      description:
+        "Master front-end and back-end development with this hands-on course. Learn to build responsive web applications using HTML, CSS, JavaScript, Node.js, Express, and MongoDB. By the end, you'll have the skills to create dynamic, full-stack web applications.",
+      price: "₹29,999",
+    },
+    curriculum: [
+      {
+        moduleTitle: "Module 1: HTML & CSS Fundamentals",
+        lessons: ["Introduction to HTML5", "CSS Styling and Layout", "Responsive Design"],
+      },
+      {
+        moduleTitle: "Module 2: JavaScript Basics",
+        lessons: ["Variables and Data Types", "Functions and Scope", "DOM Manipulation"],
+      },
+      {
+        moduleTitle: "Module 3: Backend with Node.js",
+        lessons: ["Setting up Express.js", "Building REST APIs", "Connecting to MongoDB"],
+      },
+    ],
+    features: {
+      totalLessons: 120,
+      certificate: true,
+      lifetimeAccess: false,
+      realWorldProjects: true,
+      communitySupport: true,
+      personalizedFeedback: false,
+      quizzes: false,
+      mentoring: true,
+    },
+  }),
+  new CourseData({
+    courseDetails: {
+      title: "Data Science Bootcamp",
+      instructor: "Sarah Smith",
+      duration: "20 weeks",
+      level: "Intermediate",
+      rating: 4.9,
+      description:
+        "Gain expertise in data analysis, visualization, and machine learning. Learn Python, Pandas, NumPy, and Matplotlib, and explore AI-driven decision-making techniques. Work on real-world datasets to develop practical skills in predictive modeling and analytics.",
+      price: "₹34,999",
+    },
+    curriculum: [
+      {
+        moduleTitle: "Module 1: Data Analysis with Python",
+        lessons: ["Numpy Basics", "Pandas for Data Manipulation", "Matplotlib and Seaborn"],
+      },
+      {
+        moduleTitle: "Module 2: Machine Learning Foundations",
+        lessons: ["Supervised Learning", "Unsupervised Learning", "Model Evaluation"],
+      },
+      {
+        moduleTitle: "Module 3: Advanced Topics",
+        lessons: ["Deep Learning Basics", "Time Series Analysis", "Natural Language Processing"],
+      },
+    ],
+    features: {
+      totalLessons: 150,
+      certificate: true,
+      lifetimeAccess: true,
+      realWorldProjects: true,
+      communitySupport: true,
+      personalizedFeedback: true,
+      quizzes: true,
+      mentoring: false,
+    },
+  }),
+  new CourseData({
+    courseDetails: {
+      title: "Machine Learning with Python",
+      instructor: "Alice Johnson",
+      duration: "18 weeks",
+      level: "Advanced",
+      rating: 4.8,
+      description:
+        "Dive deep into machine learning algorithms and neural networks using Python. Build intelligent applications with TensorFlow, Keras, and Scikit-learn. This course equips you with practical experience in deep learning, natural language processing, and AI-driven problem-solving.",
+      price: "₹39,999",
+    },
+    curriculum: [
+      {
+        moduleTitle: "Module 1: Python for Machine Learning",
+        lessons: ["Data Preprocessing", "Feature Engineering", "Model Building with Scikit-learn"],
+      },
+      {
+        moduleTitle: "Module 2: Neural Networks",
+        lessons: ["Introduction to Neural Networks", "TensorFlow and Keras Basics", "CNNs for Image Data"],
+      },
+      {
+        moduleTitle: "Module 3: Real-World Projects",
+        lessons: ["Sentiment Analysis", "Recommendation Systems", "Stock Price Prediction"],
+      },
+    ],
+    features: {
+      totalLessons: 100,
+      certificate: true,
+      lifetimeAccess: true,
+      realWorldProjects: true,
+      communitySupport: true,
+      personalizedFeedback: false,
+      quizzes: true,
+      mentoring: true,
+    },
+  }),
+  new CourseData({
+    courseDetails: {
+      title: "UI/UX Design Mastery",
+      instructor: "Emily Davis",
+      duration: "12 weeks",
+      level: "Beginner",
+      rating: 4.7,
+      description:
+        "Discover the principles of user-centered design and create visually appealing interfaces. Learn about typography, color theory, wireframing, and prototyping with Figma and Adobe XD. This course helps you design intuitive, user-friendly digital experiences.",
+      price: "₹24,999",
+    },
+    curriculum: [
+      {
+        moduleTitle: "Module 1: Design Principles",
+        lessons: ["Color Theory", "Typography Basics", "Layout and Composition"],
+      },
+      {
+        moduleTitle: "Module 2: UX Research",
+        lessons: ["User Personas", "Wireframing", "Usability Testing"],
+      },
+      {
+        moduleTitle: "Module 3: Tools and Prototyping",
+        lessons: ["Figma Basics", "Adobe XD Advanced", "Creating Interactive Prototypes"],
+      },
+    ],
+    features: {
+      totalLessons: 80,
+      certificate: true,
+      lifetimeAccess: true,
+      realWorldProjects: true,
+      communitySupport: true,
+      personalizedFeedback: false,
+      quizzes: false,
+      mentoring: false,
+    },
+  }),
+];
+
+
+books  =
+// Book 1
+{
+  "title": "Mastering JavaScript",
+  "author": "Emily Clark",
+  "imageUrl": "./images/javascript_book.jpg",
+  "badges": ["Hot", "Limited Stock"],
+  "rating": {
+    "average": 4.7,
+    "totalReviews": 152
+  },
+  "pricing": {
+    "price": 699,
+    "rentalPrice": 129
+  },
+  "details": {
+    "publisher": "Code Academy Press",
+    "publicationDate": "March 2023",
+    "pages": 520,
+    "language": "English",
+    "isbn": "978-1-234567-89-0"
+  },
+  "description": {
+    "about": "A complete guide to JavaScript, from fundamentals to advanced techniques. Ideal for aspiring web developers.",
+    "points": [
+      "Comprehensive coverage of ES6+ features",
+      "Practical examples and exercises",
+      "Focus on web development and Node.js",
+      "Includes best practices for debugging and optimization"
+    ]
+  },
+  "keyFeatures": [
+    "Interactive coding challenges",
+    "Access to GitHub repositories",
+    "Hands-on projects and quizzes",
+    "Regular updates and new content",
+    "Web development career tips",
+    "Advanced chapters on frameworks like React and Vue"
+  ],
+  "reviews": [
+    {
+      "reviewerName": "Alex Martinez",
+      "reviewerAvatar": "./images/student3.jpg",
+      "rating": 5,
+      "reviewText": "An outstanding book! Helped me transition from a beginner to a confident JavaScript developer."
+    },
+    {
+      "reviewerName": "Jessica Lee",
+      "reviewerAvatar": "./images/student4.jpg",
+      "rating": 4.5,
+      "reviewText": "Loved the practical approach. Would recommend to anyone starting with JavaScript!"
+    }
+  ]
+},
+
+// Book 2
+{
+  "title": "Data Structures and Algorithms",
+  "author": "David Miller",
+  "imageUrl": "./images/dsa_book.jpg",
+  "badges": ["Bestseller", "Highly Rated"],
+  "rating": {
+    "average": 4.8,
+    "totalReviews": 203
+  },
+  "pricing": {
+    "price": 899,
+    "rentalPrice": 199
+  },
+  "details": {
+    "publisher": "Algo Mastery Publishers",
+    "publicationDate": "July 2022",
+    "pages": 600,
+    "language": "English",
+    "isbn": "978-2-345678-90-1"
+  },
+  "description": {
+    "about": "This book provides an in-depth understanding of data structures and algorithms with a focus on problem-solving and coding interviews.",
+    "points": [
+      "Covers all major data structures and algorithms",
+      "Step-by-step coding examples in C++ and Python",
+      "Tips and tricks for coding interviews",
+      "Practice problems with detailed solutions"
+    ]
+  },
+  "keyFeatures": [
+    "Comprehensive problem sets",
+    "Video tutorials included",
+    "Interview preparation kits",
+    "Support for multiple programming languages",
+    "Community forums for doubt clearing",
+    "Lifetime access to content updates"
+  ],
+  "reviews": [
+    {
+      "reviewerName": "Samuel Carter",
+      "reviewerAvatar": "./images/student5.jpg",
+      "rating": 5,
+      "reviewText": "Best book for mastering DSA! Helped me crack my dream job at a tech company."
+    },
+    {
+      "reviewerName": "Olivia Brown",
+      "reviewerAvatar": "./images/student6.jpg",
+      "rating": 4.7,
+      "reviewText": "Extremely helpful for interview prep. Highly recommend to CS students."
+    }
+  ]
+},
+
+// Book 3
+{
+  "title": "Artificial Intelligence: Foundations and Practice",
+  "author": "Sophia Adams",
+  "imageUrl": "./images/ai_book.jpg",
+  "badges": ["Editor's Choice", "New"],
+  "rating": {
+    "average": 4.6,
+    "totalReviews": 98
+  },
+  "pricing": {
+    "price": 799,
+    "rentalPrice": 149
+  },
+  "details": {
+    "publisher": "AI Insights Press",
+    "publicationDate": "September 2024",
+    "pages": 480,
+    "language": "English",
+    "isbn": "978-3-456789-01-2"
+  },
+  "description": {
+    "about": "Explore the fascinating world of Artificial Intelligence, from the basics to advanced machine learning techniques.",
+    "points": [
+      "Introduction to AI concepts and history",
+      "Deep dive into supervised and unsupervised learning",
+      "Applications of AI in real-world scenarios",
+      "Ethical considerations and future trends"
+    ]
+  },
+  "keyFeatures": [
+    "Practical examples and case studies",
+    "Access to AI models and datasets",
+    "Quizzes and assignments for practice",
+    "Certification of completion",
+    "Regular webinars and live Q&A sessions",
+    "Access to AI tools and libraries"
+  ],
+  "reviews": [
+    {
+      "reviewerName": "Ethan Harris",
+      "reviewerAvatar": "./images/student7.jpg",
+      "rating": 4.8,
+      "reviewText": "A fantastic resource for learning AI. The practical case studies were very helpful."
+    },
+    {
+      "reviewerName": "Mia Wilson",
+      "reviewerAvatar": "./images/student8.jpg",
+      "rating": 4.5,
+      "reviewText": "Well-written and easy to understand. Great for beginners and intermediate learners."
+    }
+  ]
+}
+
+
+events =
+{
+  image: "./images/event1.jpg",
+  title: "Web Development Bootcamp",
+  notes: {
+    date: new Date("2025-02-15"),
+    time: "10:00 AM",
+    type: "Online",
+  },
+  description: {
+    about: "A comprehensive bootcamp for aspiring web developers.",
+    detail: [
+      "Learn HTML, CSS, and JavaScript.",
+      "Build responsive websites.",
+      "Understand front-end and back-end development."
+    ],
+  },
+  workshop: [
+    {
+      title: "HTML & CSS Basics",
+      description: "Learn the foundations of web design and development."
+    },
+    {
+      title: "JavaScript Fundamentals",
+      description: "Master JavaScript and DOM manipulation."
+    },
+  ],
+  schedule: [
+    {
+      time: "10:00 AM",
+      title: "Introduction to Web Development",
+      detail: "Overview of the bootcamp and web development basics."
+    },
+    {
+      time: "1:00 PM",
+      title: "Hands-on Workshop",
+      detail: "Practical exercises in building web pages."
+    },
+  ],
+  price: 4999,
+}
+
+{
+  image: "./images/event2.jpg",
+  title: "AI and Machine Learning Conference",
+  notes: {
+    date: new Date("2025-03-05"),
+    time: "9:00 AM",
+    type: "In-Person",
+  },
+  description: {
+    about: "A conference on the latest trends and innovations in AI and machine learning.",
+    detail: [
+      "Keynote sessions by industry experts.",
+      "Panel discussions on AI ethics.",
+      "Workshops on implementing machine learning models."
+    ],
+  },
+  workshop: [
+    {
+      title: "Building ML Models with Python",
+      description: "Learn how to create machine learning models using Python libraries."
+    },
+    {
+      title: "AI in the Real World",
+      description: "Discover how AI is transforming industries."
+    },
+  ],
+  schedule: [
+    {
+      time: "9:00 AM",
+      title: "Keynote: The Future of AI",
+      detail: "Insights from leading AI researchers."
+    },
+    {
+      time: "11:00 AM",
+      title: "Panel: AI Ethics",
+      detail: "Discussion on the ethical implications of AI."
+    },
+  ],
+  price: 9999,
+}
+
+{
+  image: "./images/event3.jpg",
+  title: "Photography Workshop",
+  notes: {
+    date: new Date("2025-04-10"),
+    time: "11:00 AM",
+    type: "Hybrid",
+  },
+  description: {
+    about: "A workshop for photography enthusiasts to learn and improve their skills.",
+    detail: [
+      "Understanding camera settings and composition.",
+      "Tips for capturing stunning photos.",
+      "Post-processing techniques."
+    ],
+  },
+  workshop: [
+    {
+      title: "Basics of Photography",
+      description: "Learn about exposure, focus, and composition."
+    },
+    {
+      title: "Editing Your Photos",
+      description: "Master photo editing using popular tools."
+    },
+  ],
+  schedule: [
+    {
+      time: "11:00 AM",
+      title: "Introduction to Photography",
+      detail: "Overview of photography concepts."
+    },
+    {
+      time: "2:00 PM",
+      title: "Practical Session",
+      detail: "Hands-on experience with your camera."
+    },
+  ],
+  price: 2999,
+}
+
+{
+  image: "./images/event4.jpg",
+  title: "Health and Wellness Retreat",
+  notes: {
+    date: new Date("2025-05-20"),
+    time: "7:00 AM",
+    type: "In-Person",
+  },
+  description: {
+    about: "A retreat to focus on mental and physical well-being.",
+    detail: [
+      "Yoga and meditation sessions.",
+      "Workshops on stress management.",
+      "Healthy cooking demonstrations."
+    ],
+  },
+  workshop: [
+    {
+      title: "Yoga for Beginners",
+      description: "Learn basic yoga poses and breathing techniques."
+    },
+    {
+      title: "Stress Management Techniques",
+      description: "Practical tips for managing stress in daily life."
+    },
+  ],
+  schedule: [
+    {
+      time: "7:00 AM",
+      title: "Morning Yoga",
+      detail: "Start your day with a relaxing yoga session."
+    },
+    {
+      time: "10:00 AM",
+      title: "Mindfulness Workshop",
+      detail: "Learn techniques for staying present and focused."
+    },
+  ],
+  price: 6999,
+}
+
+{
+  image: "./images/event5.jpg",
+  title: "Startup Founders Meetup",
+  notes: {
+    date: new Date("2025-06-01"),
+    time: "5:00 PM",
+    type: "In-Person",
+  },
+  description: {
+    about: "A networking event for startup founders and entrepreneurs.",
+    detail: [
+      "Share experiences and challenges.",
+      "Find potential collaborators or investors.",
+      "Learn from successful startup founders."
+    ],
+  },
+  workshop: [
+    {
+      title: "Pitching to Investors",
+      description: "Learn how to create and deliver a compelling pitch."
+    },
+    {
+      title: "Scaling Your Startup",
+      description: "Tips for growing your business effectively."
+    },
+  ],
+  schedule: [
+    {
+      time: "5:00 PM",
+      title: "Networking Session",
+      detail: "Meet and connect with fellow entrepreneurs."
+    },
+    {
+      time: "7:00 PM",
+      title: "Success Stories",
+      detail: "Hear inspiring stories from successful founders."
+    },
+  ],
+  price: 3999,
+}
+
+
+Studentsuccess =
+const stories = [
+  {
+    name: "Sarah Johnson",
+    position: "Software Engineer at Google",
+    image: "/images/person1.jpg",
+    story: "ShikshaCare's web development course helped me land my dream job!",
+    badges: ["Course Topper", "Placed within 2 months"],
+  },
+  {
+    name: "Michael Chen",
+    position: "Data Scientist at Amazon",
+    image: "/images/person2.jpg",
+    story: "The data science program gave me practical skills I use daily.",
+    badges: ["Project Excellence", "200% Salary Hike"],
+  },
+  {
+    name: "Emma Wilson",
+    position: "Mobile App Developer at Apple",
+    image: "/images/person3.jpg",
+    story: "From beginner to professional in just 6 months!",
+    badges: ["Best App Award", "Featured Developer"],
+  },
+  {
+    name: "James Anderson",
+    position: "Cybersecurity Analyst at Microsoft",
+    image: "/images/person4.jpg",
+    story: "ShikshaCare's cybersecurity program gave me hands-on experience to tackle real-world threats.",
+    badges: ["Certified Ethical Hacker", "Top Performer"],
+  },
+  {
+    name: "Olivia Martinez",
+    position: "UX Designer at Adobe",
+    image: "/images/person5.jpg",
+    story: "The UX/UI course transformed my design skills, helping me land a dream job at Adobe!",
+    badges: ["Best Portfolio", "Hired Before Graduation"],
+  },
+  {
+    name: "Daniel Roberts",
+    position: "AI Researcher at OpenAI",
+    image: "/images/person6.jpg",
+    story: "This AI & ML course helped me master deep learning, leading to my breakthrough research in AI.",
+    badges: ["Published Research", "AI Innovator Award"],
+  },
+];

@@ -6,16 +6,17 @@ const sellSchema = mongoose.Schema({
     quantity: {
         type: Number
     },
-    type: {
-        type: String
-    },
     price: {
         type: Number
     },
     item: {
         type: mongoose.Schema.Types.ObjectId,
-        enum: ['Book', 'Event', 'Course'],
+        refPath: 'itemType'
     },
+    type: {
+        type: String,
+        enum: ['Book', 'Event', 'Course']
+    }
 },
     {
         timestamps: true

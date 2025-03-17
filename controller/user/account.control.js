@@ -39,18 +39,18 @@ exports.updateuser = async (req, res) => {
         }
 
         const updatedData = { ...req.body };
-
+        console.log(updatedData);
         if (req.file) {
             updatedData.image = req.file.filename;
         }
 
         if (req.body.dateOfBirth) {
             const date = new Date(req.body.dateOfBirth);
-            if (!isNaN(date.getTime())) { 
+            if (!isNaN(date.getTime())) {
                 const day = String(date.getDate()).padStart(2, '0');
-                const month = String(date.getMonth() + 1).padStart(2, '0'); 
+                const month = String(date.getMonth() + 1).padStart(2, '0');
                 const year = date.getFullYear();
-                updatedData.dateOfBirth = `${day}/${month}/${year}`;
+                updatedData.dateOfBirth = `${year}-${month}-${day}`;
             } else {
                 return res.status(status.BAD_REQUEST).json({
                     message: "Invalid date format"

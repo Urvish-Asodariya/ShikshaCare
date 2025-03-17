@@ -89,7 +89,26 @@ exports.updateCourse = async (req, res) => {
         if (req.file) {
             updatedCourse.courseDetails.image = req.file.filename;
         }
-        await Course.findByIdAndUpdate(id, updatedCourse, { new: true, runValidators: true });
+        const newCourse = await Course.findByIdAndUpdate(id, updatedCourse, { new: true, runValidators: true });
+        await CourseCard.findByIdAndUpdate(
+            { course: id },
+            {
+                $set: {
+                    courseDetails: {
+                        title: newCourse.courseDetails.title,
+                        instructor: newCourse.courseDetails.instructor,
+                        duration: newCourse.courseDetails.duration,
+                        level: newCourse.courseDetails.level,
+                        rating: newCourse.courseDetails.rating,
+                        description: newCourse.courseDetails.description,
+                        image: newCourse.courseDetails.image,
+                        price: newCourse.courseDetails.price
+                    },
+                    features: newCourse.features
+                }
+            },
+            { new: true, runValidators: true }
+        );
         return res.status(status.OK).json({
             message: "Course updated successfully",
         });
@@ -125,38 +144,38 @@ exports.deleteCourse = async (req, res) => {
 
 exports.enrollChart = async (req, res) => {
     try {
+        const fiveMonthsAgo = new Date();
+        fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - 5);
         const sells = await Sell.aggregate([
-            { $match: { type: "Course" } },
             {
-                $group: {
-                    _id: { $month: "$createdAt" },
-                    total: { $sum: "$quantity" }
+                $match: {
+                    type: "Course",
+                    createdAt: { $gte: fiveMonthsAgo }
                 }
             },
             {
-                $sort: { _id: -1 }
+                $group: {
+                    _id: { $month: "$createdAt" },
+                    totalRevenue: { $sum: { $multiply: ["$quantity", "$price"] } }
+                }
             },
-            {
-                $limit: 6,
-            },
-            // {
-            //     $skip: 1
-            // }
+            { $sort: { _id: -1 } }
         ]);
-        sells.map((item) => {
-            const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
-                "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-            item._id = months[item._id];
-        })
-        if (sells === 0) {
+        const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
+            "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
+        sells.forEach((item) => {
+            item.month = months[item._id];
+        });
+        if (sells.length === 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No sales found"
             });
         }
         return res.status(status.OK).json({
-            message: "Last 5 month sales fetched successfully",
+            message: "Last 5 months' revenue fetched successfully",
             data: sells
         });
+
     } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message

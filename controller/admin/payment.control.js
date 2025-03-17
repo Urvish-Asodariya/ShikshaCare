@@ -1,4 +1,5 @@
 const Payment = require("../../models/payment.model");
+const Sell = require("../../models/sells.model");
 const { status } = require("http-status");
 
 exports.updateStatus = async (req, res) => {
@@ -31,18 +32,20 @@ exports.updateStatus = async (req, res) => {
 
 exports.allPayments = async (req, res) => {
     try {
-        const payment = await Payment.find().populate("item");
-        if (payment.length == 0) {
+        const payment = await Payment.find({ status: "completed" })
+            .populate("user", "firstName lastName -_id")
+            .populate("item")
+            .sort({ createdAt: -1 }).limit(12);
+        if (payment.length === 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No payments found"
             });
         }
         res.status(status.OK).json({
-            message: "All Payment Retrived Successfully",
-            data: payment
+            message: "All Payments Retrieved Successfully",
+            payment: payment
         });
-    }
-    catch (err) {
+    } catch (err) {
         res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message
         });
@@ -88,5 +91,51 @@ exports.singlePayment = async (req, res) => {
             message: 'Error retrieving payment',
             error: err.message,
         });
+    }
+};
+
+exports.lastFiveMonthsRevenue = async (req, res) => {
+    try {
+        const fiveMonthsAgo = new Date();
+        fiveMonthsAgo.setMonth(fiveMonthsAgo.getMonth() - 5);
+
+        const revenueData = await Payment.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: fiveMonthsAgo },
+                    status: "completed"
+                }
+            },
+            {
+                $group: {
+                    _id: {
+                        year: { $year: "$createdAt" },
+                        monthNum: { $month: "$createdAt" },
+                        monthName: { $dateToString: { format: "%B", date: "$createdAt" } }
+                    },
+                    totalRevenue: { $sum: "$price" }
+                }
+            },
+            { $sort: { "_id.year": -1, "_id.monthNum": -1 } }
+        ]);
+        const formattedData = revenueData.map(item => ({
+            month: item._id.monthName,
+            year: item._id.year,
+            totalRevenue: item.totalRevenue
+        }));
+
+        if (formattedData.length === 0) {
+            return res.status(status.NOT_FOUND).json({
+                message: "No revenue data found for the last 5 months"
+            });
+        }
+
+        return res.status(status.OK).json({
+            message: "Last 5 months' revenue fetched successfully",
+            data: formattedData
+        });
+
+    } catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({ message: err.message });
     }
 };
