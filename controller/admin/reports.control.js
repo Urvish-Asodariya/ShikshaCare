@@ -311,7 +311,7 @@ exports.growthChart = async (req, res) => {
                 }
             },
             {
-                $sort: { _id: -1 }
+                $sort: { _id: 1 }
             }
         ]);
         const months = ["", "Jan", "Feb", "Mar", "Apr", "May", "Jun",
