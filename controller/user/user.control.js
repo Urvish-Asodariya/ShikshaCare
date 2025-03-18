@@ -116,7 +116,8 @@ exports.login = async (req, res) => {
                 message: "User is blocked"
             });
         } else {
-            await User.findByIdAndUpdate({ _id: user._id }, { $set: { status: "Active" } }, { new: true, runValidators: true });
+            user.status = "Active";
+            await user.save();
             const token = jwt.sign({ id: user._id }, process.env.SECRET_KEY, { expiresIn: "1h" });
             const option = {
                 httpOnly: true,

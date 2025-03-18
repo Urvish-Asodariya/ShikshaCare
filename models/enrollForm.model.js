@@ -24,4 +24,5 @@ const EnrollfromSchema = new mongoose.Schema({
         default: "Pending"
     }
 });
-module.exports = mongoose.model("Enrollform", EnrollfromSchema);
+const Enrollform = mongoose.model("Enrollform", EnrollfromSchema);
+module.exports = Enrollform;

@@ -19,4 +19,5 @@ const studentSuccessSchema = new mongoose.Schema({
     {
         timestamps: true
     });
-module.exports = mongoose.model("studentSuccess", studentSuccessSchema);
+const studentSuccess = mongoose.model("studentSuccess", studentSuccessSchema);
+module.exports = studentSuccess;

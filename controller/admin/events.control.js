@@ -113,14 +113,14 @@ exports.updateEvent = async (req, res) => {
 
 exports.deleteEvent = async (req, res) => {
     try {
-        const id = req.params.id;
-        const event = await Event.findByIdAndDelete(id);
+        const event = await Event.findById({ _id: req.params.id });
         if (!event) {
             return res.status(status.NOT_FOUND).json({
                 message: "Event not found"
             });
         }
-        await EventCard.findOneAndDelete({ event: id });
+        await EventCard.findOneAndDelete({ event: event._id });
+        await Event.findByIdAndDelete({ _id: req.params.id });
         return res.status(status.OK).json({
             message: "Event deleted"
         });

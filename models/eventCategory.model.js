@@ -8,4 +8,5 @@ const eventCategorySchema = new mongoose.Schema({
         timestamps: true
     });
 
-module.exports = mongoose.model("EventCategory", eventCategorySchema);
+const EventCategory = mongoose.model("EventCategory", eventCategorySchema);
+module.exports = EventCategory;

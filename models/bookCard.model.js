@@ -20,4 +20,5 @@ const bookCardSchema = new mongoose.Schema({
     timestamps: true
 });
 
-module.exports = mongoose.model('BookCard', bookCardSchema);
+const BookCard = mongoose.model('BookCard', bookCardSchema);
+module.exports = BookCard;

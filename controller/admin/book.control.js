@@ -120,15 +120,14 @@ exports.updateBook = async (req, res) => {
 
 exports.deleteBook = async (req, res) => {
     try {
-        const id = req.params.id;
-        const book = await Book.findById(id);
+        const book = await Book.findById({ _id: req.params.id });
         if (!book) {
             return res.status(status.NOT_FOUND).json({
                 message: "Book not found"
             });
         }
-        await BookCard.findOneAndDelete({ book: id });
-        await Book.findByIdAndDelete(id);
+        await BookCard.findOneAndDelete({ book: book._id });
+        await Book.findByIdAndDelete({ _id: req.params.id });
         return res.status(status.OK).json({
             message: "Book deleted successfully"
         });

@@ -8,4 +8,5 @@ const bookCategorySchema = new mongoose.Schema({
         timestamps: true
     });
 
-module.exports = mongoose.model("BookCategory", bookCategorySchema);
+const BookCategory = mongoose.model("BookCategory", bookCategorySchema);
+module.exports = BookCategory;

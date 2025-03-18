@@ -22,8 +22,9 @@ const eventCardSchema = new mongoose.Schema({
         ref: 'Event'
     }
 },
-{
-    timestamps: true
-});
+    {
+        timestamps: true
+    });
 
-module.exports = mongoose.model('EventCard', eventCardSchema);;
+const EventCard = mongoose.model('EventCard', eventCardSchema);
+module.exports = EventCard;

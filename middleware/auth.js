@@ -37,7 +37,6 @@ exports.isUser = async (req, res, next) => {
     }
 };
 
-
 exports.isadmin = async (req, res, next) => {
     try {
         const id = req.user._id;

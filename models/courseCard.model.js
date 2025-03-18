@@ -27,4 +27,5 @@ const courseCardSchema = new mongoose.Schema({
 }, {
     timestamps: true
 });
-module.exports = mongoose.model('CourseCard', courseCardSchema);
+const CourseCard = mongoose.model('CourseCard', courseCardSchema);
+module.exports = CourseCard;

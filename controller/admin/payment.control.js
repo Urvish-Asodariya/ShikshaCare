@@ -55,7 +55,7 @@ exports.allPayments = async (req, res) => {
 exports.singleUserPayments = async (req, res) => {
     try {
         const id = req.params.id;
-        const payments = await Payment.find({ user: id }).populate('item');
+        const payments = await Payment.find({ user: id }).populate("user", "firstName lastName -_id").populate('item');
         if (payment.length == 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No payments found"
