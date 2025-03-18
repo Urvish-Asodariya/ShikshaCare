@@ -94,9 +94,6 @@ exports.updateCourse = async (req, res) => {
                 message: "Invalid data format"
             });
         }
-        if (!updatedCourse.courseDetails) {
-            updatedCourse.courseDetails = {};
-        }
         if (req.file) {
             updatedCourse.courseDetails.image = req.file.filename;
         }
