@@ -75,16 +75,26 @@ exports.singleEvent = async (req, res) => {
     }
 };
 
+
 exports.updateEvent = async (req, res) => {
     try {
         const id = req.params.id;
-        const eventdata = JSON.parse(req.body.data);
-        if (req.file) {
-            eventdata.image = req.file.filename;
+        let eventdata;
+        try {
+            eventdata = JSON.parse(req.body.data);
+        } catch (error) {
+            return res.status(status.BAD_REQUEST).json({
+                message: "Invalid data format"
+            });
         }
-        const updatedEvent = await Event.findByIdAndUpdate(id, eventdata, { new: true, runValidators: true });
-        await EventCard.findByIdAndUpdate(
-            { event: id },
+
+        if (!updatedEvent) {
+            return res.status(status.NOT_FOUND).json({
+                message: "Event not found"
+            });
+        }
+        await EventCard.findOneAndUpdate(
+            { event: id }, 
             {
                 $set: {
                     image: updatedEvent.image,
@@ -94,17 +104,13 @@ exports.updateEvent = async (req, res) => {
             },
             { new: true, runValidators: true }
         );
-        if (!updatedEvent) {
-            return res.status(status.NOT_FOUND).json({
-                message: "Event not found"
-            });
-        }
-        await updatedEvent.save();
+
         return res.status(status.OK).json({
-            message: "Event updated",
+            message: "Event updated successfully",
+            updatedEvent
         });
-    }
-    catch (err) {
+
+    } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message
         });

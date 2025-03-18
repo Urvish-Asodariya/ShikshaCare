@@ -76,6 +76,7 @@ exports.singleCourse = async (req, res) => {
     }
 };
 
+
 exports.updateCourse = async (req, res) => {
     try {
         const id = req.params.id;
@@ -85,35 +86,55 @@ exports.updateCourse = async (req, res) => {
                 message: "Course not found"
             });
         }
-        const updatedCourse = JSON.parse(req.body.data);
+        let updatedCourse;
+        try {
+            updatedCourse = JSON.parse(req.body.data);
+        } catch (error) {
+            return res.status(status.BAD_REQUEST).json({
+                message: "Invalid data format"
+            });
+        }
+        if (!updatedCourse.courseDetails) {
+            updatedCourse.courseDetails = {};
+        }
         if (req.file) {
             updatedCourse.courseDetails.image = req.file.filename;
         }
-        const newCourse = await Course.findByIdAndUpdate(id, updatedCourse, { new: true, runValidators: true });
-        await CourseCard.findByIdAndUpdate(
-            { course: id },
+        const newCourse = await Course.findByIdAndUpdate(id, updatedCourse, {
+            new: true,
+            runValidators: true
+        });
+
+        if (!newCourse) {
+            return res.status(status.INTERNAL_SERVER_ERROR).json({
+                message: "Failed to update course"
+            });
+        }
+        const updatedFeatures = newCourse.features || {};
+        await CourseCard.findOneAndUpdate(
+            { course: id },  
             {
                 $set: {
-                    courseDetails: {
-                        title: newCourse.courseDetails.title,
-                        instructor: newCourse.courseDetails.instructor,
-                        duration: newCourse.courseDetails.duration,
-                        level: newCourse.courseDetails.level,
-                        rating: newCourse.courseDetails.rating,
-                        description: newCourse.courseDetails.description,
-                        image: newCourse.courseDetails.image,
-                        price: newCourse.courseDetails.price
-                    },
-                    features: newCourse.features
+                    "courseDetails.title": newCourse.courseDetails.title,
+                    "courseDetails.instructor": newCourse.courseDetails.instructor,
+                    "courseDetails.duration": newCourse.courseDetails.duration,
+                    "courseDetails.level": newCourse.courseDetails.level,
+                    "courseDetails.rating": newCourse.courseDetails.rating,
+                    "courseDetails.description": newCourse.courseDetails.description,
+                    "courseDetails.image": newCourse.courseDetails.image,
+                    "courseDetails.price": newCourse.courseDetails.price,
+                    features: updatedFeatures
                 }
             },
             { new: true, runValidators: true }
         );
+
         return res.status(status.OK).json({
             message: "Course updated successfully",
+            updatedCourse: newCourse
         });
-    }
-    catch (err) {
+
+    } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message
         });

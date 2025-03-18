@@ -17,11 +17,6 @@ const EnrollfromSchema = new mongoose.Schema({
     },
     language: {
         type: String,
-    },
-    status: {
-        type: String,
-        enum: ["Pending", "Approved", "Rejected"],
-        default: "Pending"
     }
 });
 const Enrollform = mongoose.model("Enrollform", EnrollfromSchema);

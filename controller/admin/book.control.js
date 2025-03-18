@@ -89,29 +89,44 @@ exports.updateBook = async (req, res) => {
                 message: "Book not found"
             });
         }
-        const Books = JSON.parse(req.body.data);
+        let Books;
+        try {
+            Books = JSON.parse(req.body.data);
+        } catch (error) {
+            return res.status(status.BAD_REQUEST).json({
+                message: "Invalid data format"
+            });
+        }
         if (req.file) {
             Books.image = req.file.filename;
         }
-        const updatedBook = await Book.findByIdAndUpdate(id, Books, { new: true, runValidators: true });
-        await BookCard.findByIdAndUpdate({ book: id },
-            {
-                $set: {
-                    title: updatedBook.title,
-                    author: updatedBook.author,
-                    image: updatedBook.image,
-                    badges: updatedBook.badges,
-                    rating: updatedBook.rating,
-                    pricing: updatedBook.pricing
-                }
-            },
-            { new: true, runValidators: true }
-        );
+        const updatedBook = await Book.findByIdAndUpdate(id, Books, {
+            new: true,
+            runValidators: true
+        });
+        if (updatedBook) {
+            await BookCard.findOneAndUpdate(
+                { book: id }, 
+                {
+                    $set: {
+                        title: updatedBook.title,
+                        author: updatedBook.author,
+                        image: updatedBook.image,
+                        badges: updatedBook.badges,
+                        rating: updatedBook.rating,
+                        pricing: updatedBook.pricing
+                    }
+                },
+                { new: true, runValidators: true }
+            );
+        }
+
         return res.status(status.OK).json({
-            message: "Book updated successfully"
-        })
-    }
-    catch (err) {
+            message: "Book updated successfully",
+            updatedBook
+        });
+
+    } catch (err) {
         return res.status(status.INTERNAL_SERVER_ERROR).json({
             message: err.message,
         });

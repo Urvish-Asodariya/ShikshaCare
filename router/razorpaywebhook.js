@@ -7,6 +7,7 @@ const User = require("../models/user.model");
 const Course = require("../models/course.model");
 const Book = require("../models/book.model");
 const Event = require("../models/events.model");
+const Enrollform = require("../models/enrollForm.model")
 const nodemailer = require("nodemailer");
 
 const sendSuccessEmail = async (userEmail, type, details) => {
