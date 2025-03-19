@@ -76,7 +76,6 @@ exports.singleCourse = async (req, res) => {
     }
 };
 
-
 exports.updateCourse = async (req, res) => {
     try {
         const id = req.params.id;

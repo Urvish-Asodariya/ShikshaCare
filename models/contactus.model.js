@@ -9,6 +9,9 @@ const ContactUsSchema = new mongoose.Schema({
     message: {
         type: String,
     }
+},
+{
+    timestamps: true
 });
 const ContactUs = mongoose.model("ContactUs", ContactUsSchema);
 module.exports = ContactUs;
