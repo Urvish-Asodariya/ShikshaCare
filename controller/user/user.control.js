@@ -126,8 +126,14 @@ exports.login = async (req, res) => {
                 sameSite: "strict"
             };
             res.cookie("TOKEN", token, option);
-            if (user.role == "Student") {
-                await sendWelcomeEmail(email);
+            const registerDate = new Date(user.createdAt).getTime();
+            const currentDate = new Date().getTime()+86400000;
+            const diffTime = Math.abs(currentDate - registerDate);
+            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+            if (diffDays == 1) {
+                if (user.role == "Student") {
+                    await sendWelcomeEmail(email);
+                }
             }
             return res.status(status.OK).json({
                 message: "User logged in successfully",
