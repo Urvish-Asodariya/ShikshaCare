@@ -82,6 +82,7 @@ exports.register = async (req, res) => {
         const publicId = req.file?.filename || null;
         const user = new User({ firstName, lastName, email, password: hashedPassword, dateOfBirth: null, mobileNumber, gender: null, image: publicId, city: null, state: null, joiningdate: formattedDate, batch: year });
         await user.save();
+        await sendWelcomeEmail(email);
         return res.status(status.OK).json({
             message: "User created successfully"
         });
@@ -126,15 +127,6 @@ exports.login = async (req, res) => {
                 sameSite: "strict"
             };
             res.cookie("TOKEN", token, option);
-            const registerDate = new Date(user.createdAt).getTime();
-            const currentDate = new Date().getTime()+86400000;
-            const diffTime = Math.abs(currentDate - registerDate);
-            const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-            if (diffDays == 1) {
-                if (user.role == "Student") {
-                    await sendWelcomeEmail(email);
-                }
-            }
             return res.status(status.OK).json({
                 message: "User logged in successfully",
                 token: token,
