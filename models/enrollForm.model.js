@@ -18,6 +18,9 @@ const EnrollfromSchema = new mongoose.Schema({
     language: {
         type: String,
     }
+},
+{
+    timestamps: true
 });
 const Enrollform = mongoose.model("Enrollform", EnrollfromSchema);
 module.exports = Enrollform;
