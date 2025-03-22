@@ -99,6 +99,8 @@ exports.updateBook = async (req, res) => {
         }
         if (req.file) {
             Books.image = req.file.filename;
+        }else{
+            Books.image = book.image;
         }
         const updatedBook = await Book.findByIdAndUpdate(id, Books, {
             new: true,

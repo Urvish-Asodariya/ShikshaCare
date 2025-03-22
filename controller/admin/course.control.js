@@ -85,16 +85,22 @@ exports.updateCourse = async (req, res) => {
                 message: "Course not found"
             });
         }
-        let updatedCourse;
-        try {
-            updatedCourse = JSON.parse(req.body.data);
-        } catch (error) {
-            return res.status(status.BAD_REQUEST).json({
-                message: "Invalid data format"
-            });
-        }
+        // let updatedCourse;
+        // try {
+        //     updatedCourse = JSON.parse(req.body.data);
+        // } catch (error) {
+        //     return res.status(status.BAD_REQUEST).json({
+        //         message: "Invalid data format"
+        //     });
+        // }
+        // if (req.file) {
+        //     updatedCourse.courseDetails.image = req.file.filename;
+        // }
+        const courseData = JSON.parse(req.body.data);
         if (req.file) {
-            updatedCourse.courseDetails.image = req.file.filename;
+            courseData.courseDetails.image = req.file.filename;
+        }else{
+            courseData.courseDetails.image = course.courseDetails.image;
         }
         const newCourse = await Course.findByIdAndUpdate(id, updatedCourse, {
             new: true,
@@ -108,7 +114,7 @@ exports.updateCourse = async (req, res) => {
         }
         const updatedFeatures = newCourse.features || {};
         await CourseCard.findOneAndUpdate(
-            { course: id },  
+            { course: id },
             {
                 $set: {
                     "courseDetails.title": newCourse.courseDetails.title,
