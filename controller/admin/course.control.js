@@ -102,7 +102,7 @@ exports.updateCourse = async (req, res) => {
         }else{
             courseData.courseDetails.image = course.courseDetails.image;
         }
-        const newCourse = await Course.findByIdAndUpdate(id, updatedCourse, {
+        const newCourse = await Course.findByIdAndUpdate(id, courseData, {
             new: true,
             runValidators: true
         });

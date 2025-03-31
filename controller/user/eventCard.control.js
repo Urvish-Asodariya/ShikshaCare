@@ -7,7 +7,14 @@ const nodemailer = require('nodemailer');
 
 exports.allCards = async (req, res) => {
     try {
-        const events = await eventCard.find().limit(6);
+        const limit = 6;
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit;
+        const total = await eventCard.countDocuments();
+        const events = await eventCard.aggregate([
+            { $skip: skip },
+            { $limit: limit }
+        ]);
         if (events.length == 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No event found"
@@ -18,7 +25,8 @@ exports.allCards = async (req, res) => {
         });
         return res.status(status.OK).json({
             message: "Events retrieved successfully",
-            events: events
+            events: events,
+            total: total,
         });
     }
     catch (err) {
@@ -60,7 +68,7 @@ const transporter = nodemailer.createTransport({
 exports.sendEventReminderEmails = async () => {
     try {
         const currentTime = new Date();
-        const reminderTime = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000); 
+        const reminderTime = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
         const events = await Event.find({ "notes.date": { $gte: currentTime, $lte: reminderTime } });
 
         if (events.length === 0) {
