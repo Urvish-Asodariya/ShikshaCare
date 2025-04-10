@@ -1,19 +1,24 @@
 const Userreview = require("../../models/userReview.model");
-const Book = require("../../models/book.model");
 const { status } = require("http-status");
 
 exports.addReview = async (req, res) => {
     try {
         const id = req.params.bookId;
-        const book = await Book.findById(id);
-        if (!book) {
-            return res.status(status.NOT_FOUND).json({
-                message: "Book not found"
-            });
+        const itemType = req.body.itemType;
+        let itemModel;
+        switch (itemType) {
+            case 'Book': itemModel = require('../../models/book.model'); break;
+            case 'Course': itemModel = require('../../models/course.model'); break;
+            default:
+                return res.status(400).json({ message: "Invalid itemType" });
+        }
+        const item = await itemModel.findById(id);
+        if (!item) {
+            return res.status(404).json({ message: `${itemType} not found` });
         }
         const { reviewerName, rating, reviewText } = req.body;
         console.log(req.body);
-        const userReview = new Userreview({ username: reviewerName, rating: rating, review: reviewText, book: id });
+        const userReview = new Userreview({ username: reviewerName, rating: rating, review: reviewText, itemType: itemType, itemId: id });
         await userReview.save();
         res.status(status.OK).json({
             message: "Review added successfully",

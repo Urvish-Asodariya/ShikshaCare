@@ -305,3 +305,22 @@ exports.applicationChart = async (req, res) => {
         });
     }
 };
+
+exports.deleteApplication = async (req, res) => {
+    try {
+        const thirtyDaysAgo = new Date(Date.now() - (30 * 24 * 60 * 60 * 1000));
+        const expiredApplications = await Instructor.find({
+            applicationStatus: "Rejected",
+            createdAt: { $lte: thirtyDaysAgo }
+        });
+        for (const app of expiredApplications) {
+            await Instructor.findByIdAndDelete(app._id);
+        }
+        console.log(`${expiredApplications.length} applications deleted successfully`);
+    }
+    catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+}

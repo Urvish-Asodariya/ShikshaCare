@@ -14,5 +14,6 @@ router.get("/event", auth, isUser, accountControl.userEvent);
 router.delete("/removeevent/:id", auth, isUser, accountControl.removeEvent);
 router.put("/changepass", auth, isUser, accountControl.changepass);
 router.put("/logout", auth, isUser, accountControl.logout);
+router.post("/mobileverify", auth, isUser, accountControl.mobileVerify);
 
 module.exports = router;

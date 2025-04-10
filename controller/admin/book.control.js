@@ -89,43 +89,31 @@ exports.updateBook = async (req, res) => {
                 message: "Book not found"
             });
         }
-        let Books;
-        try {
-            Books = JSON.parse(req.body.data);
-        } catch (error) {
-            return res.status(status.BAD_REQUEST).json({
-                message: "Invalid data format"
-            });
-        }
-        if (req.file) {
-            Books.image = req.file.filename;
-        }else{
-            Books.image = book.image;
-        }
-        const updatedBook = await Book.findByIdAndUpdate(id, Books, {
-            new: true,
-            runValidators: true
+        const bookdata = JSON.parse(req.body.data);
+        Object.keys(bookdata).forEach(key => {
+            book[key] = bookdata[key];
         });
-        if (updatedBook) {
-            await BookCard.findOneAndUpdate(
-                { book: id }, 
-                {
-                    $set: {
-                        title: updatedBook.title,
-                        author: updatedBook.author,
-                        image: updatedBook.image,
-                        badges: updatedBook.badges,
-                        rating: updatedBook.rating,
-                        pricing: updatedBook.pricing
-                    }
-                },
-                { new: true, runValidators: true }
-            );
+        if (bookdata.amount) {
+            book.pricing.price = bookdata.amount;
         }
-
+        console.log("amoiunt", book.pricing.price);
+        await book.save();
+        await BookCard.findOneAndUpdate(
+            { book: id },
+            {
+                $set: {
+                    title: book.title,
+                    author: book.author,
+                    image: book.image,
+                    badges: book.badges,
+                    rating: book.rating,
+                    pricing: book.pricing
+                }
+            },
+            { new: true, runValidators: true }
+        );
         return res.status(status.OK).json({
-            message: "Book updated successfully",
-            updatedBook
+            message: "Book updated successfully"
         });
 
     } catch (err) {
@@ -225,6 +213,45 @@ exports.categoryChart = async (req, res) => {
         })
         return res.status(status.OK).json({
             message: "Chartdata fetched successfully",
+            data: categoryProduct
+        });
+    }
+    catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+};
+
+exports.categoryitem = async (req, res) => {
+    try {
+        const results = await bookCategory.aggregate([
+            {
+                $lookup: {
+                    from: "books",
+                    localField: "_id",
+                    foreignField: "category",
+                    as: "books"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    description: 1,
+                    totalProducts: { $size: "$books" }
+                }
+            }
+        ]);
+        const categoryProduct = results.map((item) => {
+            const _id = item._id;
+            const name = item.name;
+            const description = item.description;
+            const totalProducts = item.totalProducts
+            return { _id, name, description, totalProducts };
+        })
+        return res.status(status.OK).json({
+            message: "Book Items fetched successfully",
             data: categoryProduct
         });
     }

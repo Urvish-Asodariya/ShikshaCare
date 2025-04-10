@@ -31,7 +31,10 @@ const sendSuccessEmail = async (userEmail, type, details) => {
             },
             Event: {
                 subject: "🎟️ Event Registration Confirmed!",
-                message: `You are successfully registered for the event <strong>${details.name}</strong>. See you there!`
+                message: `You are successfully registered for the event <strong>${details.name}</strong>.<br><br>
+                📅 <strong>Date:</strong> ${details.date}<br>
+                🕒 <strong>Time:</strong> ${details.time}<br><br>
+                We look forward to seeing you there!`
             }
         };
 
@@ -46,30 +49,24 @@ const sendSuccessEmail = async (userEmail, type, details) => {
             to: userEmail,
             subject,
             html: `<!DOCTYPE html>
-<html lang="en">
+                   <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>${subject}</title>
-    <style>
-        body { font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 0; }
-        .email-container { max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); }
-        .header { background-color: #4CAF50; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: bold; }
-        .content { padding: 20px; text-align: left; }
-        .content p { font-size: 16px; margin: 10px 0; }
-        .footer { background-color: #f1f1f1; text-align: center; padding: 10px; font-size: 14px; color: #555; }
-    </style>
 </head>
-<body>
-    <div class="email-container">
-        <div class="header">${subject}</div>
-        <div class="content">
-            <p>Hello,</p>
-            <p>${message}</p>
-            <p>Thank you for choosing ShikshaCare!</p>
+<body style="font-family: Arial, sans-serif; background-color: #f9f9f9; color: #333; margin: 0; padding: 0;">
+    <div style="max-width: 600px; margin: 20px auto; background: #ffffff; border-radius: 8px; overflow: hidden; box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);">
+        <div style="background-color: #4CAF50; color: white; text-align: center; padding: 20px; font-size: 20px; font-weight: bold;">
+            ${subject}
         </div>
-        <div class="footer">
-            <p>&copy; 2025 ShikshaCare. All rights reserved.</p>
+        <div style="padding: 20px; text-align: left;">
+            <p style="font-size: 16px; margin: 10px 0;">Hello,</p>
+            <p style="font-size: 16px; margin: 10px 0;">${message}</p>
+            <p style="font-size: 16px; margin: 10px 0;">Thank you for choosing ShikshaCare!</p>
+        </div>
+        <div style="background-color: #f1f1f1; text-align: center; padding: 10px; font-size: 14px; color: #555;">
+            &copy; 2025 ShikshaCare. All rights reserved.
         </div>
     </div>
 </body>
@@ -123,6 +120,7 @@ router.post('/razorpay-webhook', async (req, res) => {
             const { item, itemType, price } = paymentRecord;
             let field = null;
             let itemName = '';
+            let emailDetails = {};
 
             //  Find the purchased item
             if (itemType === "Course") {
@@ -130,18 +128,27 @@ router.post('/razorpay-webhook', async (req, res) => {
                 if (course) {
                     itemName = course.courseDetails.title;
                     field = "course";
+                    emailDetails = { name: itemName };
                 }
             } else if (itemType === "Event") {
                 const event = await Event.findById(item);
                 if (event) {
                     itemName = event.title;
                     field = "event";
+                    const date = new Intl.DateTimeFormat('en-GB', {
+                        day: '2-digit',
+                        month: 'short',
+                        year: 'numeric'
+                    }).format(new Date(event.notes?.date));
+                    const time = event.notes?.time || "TBA";
+                    emailDetails = { name: itemName, date, time };
                 }
             } else if (itemType === "Book") {
                 const book = await Book.findById(item);
                 if (book) {
                     itemName = book.title;
                     field = "book";
+                    emailDetails = { name: itemName };
                 }
             }
 
@@ -151,7 +158,6 @@ router.post('/razorpay-webhook', async (req, res) => {
                 await user.save();
             }
 
-            //  Update Sell Records
             const existingSell = await Sells.findOne({ name: itemName });
             if (!existingSell) {
                 await new Sells({
@@ -169,7 +175,7 @@ router.post('/razorpay-webhook', async (req, res) => {
                 );
             }
 
-            await sendSuccessEmail(user.email, itemType, { name: itemName });
+            await sendSuccessEmail(user.email, itemType, emailDetails);
             return res.status(200).json({ success: true, message: 'Payment successful, user updated' });
         }
 

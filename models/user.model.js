@@ -22,7 +22,7 @@ const userSchema = new mongoose.Schema({
     },
     gender: {
         type: String,
-        enum: ['male', 'female']
+        enum: ['male', 'female', '']
     },
     image: {
         type: String
@@ -60,6 +60,10 @@ const userSchema = new mongoose.Schema({
         type: String,
         enum: ["Active", "Inactive", "Block"],
         default: "Active"
+    },
+    mobileVerified: {
+        type: Boolean,
+        default: false
     },
     otp: {
         type: Number

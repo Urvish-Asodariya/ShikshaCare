@@ -5,14 +5,14 @@ const { status } = require("http-status");
 
 exports.add = async (req, res) => {
     try {
-        const { name } = req.body;
+        const { name, description } = req.body;
         const existingCategory = await eventCategory.findOne({ name });
         if (existingCategory) {
             return res.status(status.CONFLICT).json({
                 message: "Category already exists"
             });
         }
-        const category = new eventCategory({ name });
+        const category = new eventCategory({ name, description });
         await category.save();
         return res.status(status.OK).json({
             message: "category added successfully"

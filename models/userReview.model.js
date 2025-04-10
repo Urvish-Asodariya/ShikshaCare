@@ -12,9 +12,15 @@ const userReviewSchema = mongoose.Schema({
     review: {
         type: String,
     },
-    book: {
+    itemType: {
+        type: String,
+        enum: ['Book', 'Event', 'Course'],
+        required: true
+    },
+    itemId: {
         type: mongoose.Schema.Types.ObjectId,
-        ref: 'Book'
+        refPath: 'itemType',
+        required: true
     }
 },
     {

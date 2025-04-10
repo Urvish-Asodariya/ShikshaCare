@@ -5,14 +5,14 @@ const { status } = require("http-status");
 
 exports.add = async (req, res) => {
     try {
-        const { name } = req.body;
+        const { name, description } = req.body;
         const existingCategory = await courseCategory.findOne({ name });
         if (existingCategory) {
             return res.status(status.CONFLICT).json({
                 message: "Category already exists"
             });
         }
-        const category = new courseCategory({ name });
+        const category = new courseCategory({ name, description });
         await category.save();
         return res.status(status.OK).json({
             message: "category added successfully"
@@ -72,11 +72,11 @@ exports.delete = async (req, res) => {
         if (!category) {
             return res.status(status.NOT_FOUND).json({ message: "Category not found" });
         }
-        const courses = await Course.find({ category: category._id });
+        const courses = await Course.find({ category: id });
         for (const course of courses) {
             await CourseCard.deleteMany({ course: course._id });
+            await Course.findByIdAndDelete(course._id);
         }
-        await Course.findByIdAndDelete({ id: course._id })
         await courseCategory.findByIdAndDelete(id);
         return res.status(status.OK).json({
             message: "Category deleted successfully"

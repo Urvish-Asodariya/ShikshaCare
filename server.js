@@ -3,11 +3,13 @@ const cors = require("cors");
 const express = require("express");
 const app = express();
 const mongoose = require("mongoose");
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 4000;
 const bodyparser = require("body-parser");
 const cookieparser = require("cookie-parser");
 const cron = require('node-cron');
 const { sendEventReminderEmails } = require('./controller/user/eventCard.control');
+const { deleteApplication } = require("./controller/admin/instructor.control");
+const { deleteExpiredEvents } = require("./controller/admin/events.control")
 
 app.use(cors());
 app.use(cookieparser());
@@ -44,6 +46,10 @@ cron.schedule("0 0 9 * * *", async () => {
     try {
         await sendEventReminderEmails();
         console.log("Event reminder emails sent successfully.");
+        await deleteApplication();
+        console.log("30 days old and rejected applications deleted successfully.");
+        await deleteExpiredEvents();
+        console.log("Expired events deleted successfully.");
     } catch (error) {
         console.error("Error in scheduled event reminder:", error);
     }
@@ -58,6 +64,7 @@ app.use("/admin/course", require("./router/admin/course.route"));
 app.use("/admin/reports", require("./router/admin/reports.route"));
 app.use("/admin/payment", require("./router/admin/payment.route"));
 app.use("/admin/bookcard", require("./router/admin/bookCard.route"));
+app.use("/admin/contactus", require("./router/admin/contactUs.route"));
 app.use("/admin/eventcard", require("./router/admin/eventCard.route"));
 app.use("/admin/instructor", require("./router/admin/instructor.route"));
 app.use("/admin/coursecard", require("./router/admin/courseCard.route"));

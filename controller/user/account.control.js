@@ -292,3 +292,29 @@ exports.logout = async (req, res) => {
         });
     }
 };
+
+exports.mobileVerify = async (req, res) => {
+    try {
+        const id = req.user._id;
+        const user = await User.findById({ _id: id });
+        if (!user) {
+            return res.status(status.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
+        if (!user.mobileVerified) {
+            return res.status(status.BAD_REQUEST).json({
+                message: "Mobile number not verified"
+            });
+        }
+        return res.status(status.OK).json({
+            message: "Mobile number verification already done",
+            status: 200
+        });
+    }
+    catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+}

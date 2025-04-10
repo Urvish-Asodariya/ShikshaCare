@@ -11,6 +11,7 @@ router.put("/update/:id", auth, isadmin, upload.single("image"), courseControl.u
 router.delete("/delete/:id", auth, isadmin, courseControl.deleteCourse);
 router.get("/enrollchart", auth, isadmin, courseControl.enrollChart);
 router.get("/categorychart", auth, isadmin, courseControl.categoryChart);
+router.get("/categoryitems",auth, isadmin, courseControl.categoryItems);
 
 
 module.exports = router;

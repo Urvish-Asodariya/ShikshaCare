@@ -16,7 +16,7 @@ exports.singleBook = async (req, res) => {
         let avgRating = 0;
         let reviews = 0;
         let rating = {};
-        const review = await Userreview.find({ book: book._id });
+        const review = await Userreview.find({ itemId: book._id });
         if (review) {
             const Rating = review.reduce((acc, curr) => acc + curr.rating, 0);
             avgRating = Rating / review.length;

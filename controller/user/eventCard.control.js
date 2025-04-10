@@ -2,12 +2,21 @@ const eventCard = require('../../models/eventCard.model');
 const Event = require('../../models/events.model');
 const User = require("../../models/user.model");
 const { status } = require("http-status");
+const mongoose = require('mongoose');
 const { getFileUrl } = require("../../utils/CloudinaryConfig");
 const nodemailer = require('nodemailer');
+const eventCategory = require("../../models/eventCategory.model");
 
 exports.allCards = async (req, res) => {
     try {
-        const events = await eventCard.find().limit(6);
+        const limit = 6;
+        const page = parseInt(req.query.page) || 1;
+        const skip = (page - 1) * limit;
+        const total = await eventCard.countDocuments();
+        const events = await eventCard.aggregate([
+            { $skip: skip },
+            { $limit: limit }
+        ]);
         if (events.length == 0) {
             return res.status(status.NOT_FOUND).json({
                 message: "No event found"
@@ -18,7 +27,8 @@ exports.allCards = async (req, res) => {
         });
         return res.status(status.OK).json({
             message: "Events retrieved successfully",
-            events: events
+            cards: events,
+            total: total,
         });
     }
     catch (err) {
@@ -60,7 +70,7 @@ const transporter = nodemailer.createTransport({
 exports.sendEventReminderEmails = async () => {
     try {
         const currentTime = new Date();
-        const reminderTime = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000); 
+        const reminderTime = new Date(currentTime.getTime() + 24 * 60 * 60 * 1000);
         const events = await Event.find({ "notes.date": { $gte: currentTime, $lte: reminderTime } });
 
         if (events.length === 0) {
@@ -133,3 +143,115 @@ exports.sendEventReminderEmails = async () => {
         console.error("Error sending reminder emails:", err);
     }
 };
+
+exports.searchCard = async (req, res) => {
+    try {
+        const query = req.query.query || "";
+        const page = parseInt(req.query.page) || 1;
+        const limit = 6;
+        const skip = (page - 1) * limit;
+        const eventcard = await eventCard.find({
+            "title": { $regex: query, $options: "i" }
+        })
+            .skip(skip)
+            .limit(limit);
+
+        const total = await eventCard.countDocuments({
+            "title": { $regex: query, $options: "i" }
+        });
+        if (eventcard.length == 0) {
+            return res.status(status.NOT_FOUND).json({
+                message: "No course found"
+            });
+        }
+        eventcard.forEach(event => {
+            event.image = getFileUrl(event.image);
+        });
+        return res.status(status.OK).json({
+            message: "EventCards retrieved successfully",
+            cards: eventcard,
+            total: total,
+        })
+    }
+    catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        })
+    }
+};
+
+exports.categoryitems = async (req, res) => {
+    try {
+        const results = await eventCategory.aggregate([
+            {
+                $lookup: {
+                    from: "events",
+                    localField: "_id",
+                    foreignField: "category",
+                    as: "events"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    description: 1,
+                    totalProducts: { $size: "$events" }
+                }
+            }
+        ]);
+        const categoryProduct = results.map((item) => {
+            const _id = item._id;
+            const name = item.name;
+            const description = item.description;
+            const totalProducts = item.totalProducts
+            return { _id, name, description, totalProducts };
+        })
+        return res.status(status.OK).json({
+            message: "Chartdata fetched successfully",
+            data: categoryProduct
+        });
+    }
+    catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+};
+
+exports.categoryWiseCourse = async (req, res) => {
+    try {
+        const results = await eventCategory.aggregate([
+            {
+                $match: { _id: new mongoose.Types.ObjectId(req.params.id) }
+            },
+            {
+                $lookup: {
+                    from: "events",
+                    localField: "_id",
+                    foreignField: "category",
+                    as: "events"
+                }
+            },
+            {
+                $project: {
+                    courseName: "$events.title"
+                }
+            }
+        ]);
+
+        const categoryProduct = results.map((item) => {
+            return { courseName: item.courseName };
+        });
+
+        return res.status(status.OK).json({
+            message: "Categories wise data fetched successfully",
+            data: categoryProduct
+        });
+
+    } catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+}

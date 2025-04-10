@@ -103,12 +103,13 @@ exports.login = async (req, res) => {
             });
         }
         const user = await User.findOne({ email });
-        const isValidPassword = await bcrypt.compare(password, user.password);
         if (!user) {
             return res.status(status.NOT_FOUND).json({
                 message: "User not found"
             });
-        } else if (!isValidPassword) {
+        }
+        const isValidPassword = await bcrypt.compare(password, user.password);
+        if (!isValidPassword) {
             return res.status(status.UNAUTHORIZED).json({
                 message: "Invalid password"
             });

@@ -75,31 +75,27 @@ exports.singleEvent = async (req, res) => {
     }
 };
 
-
 exports.updateEvent = async (req, res) => {
     try {
         const id = req.params.id;
-        let eventdata;
-        try {
-            eventdata = JSON.parse(req.body.data);
-        } catch (error) {
-            return res.status(status.BAD_REQUEST).json({
-                message: "Invalid data format"
-            });
-        }
-
-        if (!updatedEvent) {
+        const eventdata = JSON.parse(req.body.data);
+        const event = await Event.findById(id);
+        if (!event) {
             return res.status(status.NOT_FOUND).json({
                 message: "Event not found"
             });
         }
+        Object.keys(eventdata).forEach(key => {
+            event[key] = eventdata[key];
+        });
+        await event.save();
         await EventCard.findOneAndUpdate(
-            { event: id }, 
+            { event: id },
             {
                 $set: {
-                    image: updatedEvent.image,
-                    title: updatedEvent.title,
-                    notes: updatedEvent.notes
+                    image: event.image,
+                    title: event.title,
+                    notes: event.notes
                 }
             },
             { new: true, runValidators: true }
@@ -107,7 +103,7 @@ exports.updateEvent = async (req, res) => {
 
         return res.status(status.OK).json({
             message: "Event updated successfully",
-            updatedEvent
+            event
         });
 
     } catch (err) {
@@ -136,6 +132,25 @@ exports.deleteEvent = async (req, res) => {
             message: err.message
         });
     };
+};
+
+exports.deleteExpiredEvents = async (req, res) => {
+    try {
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        const expiredEvents = await Event.find({
+            createdAt: { $lt: today }
+        });
+        for (const event of expiredEvents) {
+            await EventCard.deleteMany({ event: event._id });
+            await Event.findByIdAndDelete(event._id);
+        }
+        console.log(`${expiredEvents.length} expired events deleted successfully`);
+    } catch (err) {
+        return res.status(500).json({
+            message: err.message
+        });
+    }
 };
 
 exports.enrollChart = async (req, res) => {
@@ -202,6 +217,45 @@ exports.categoryChart = async (req, res) => {
             const name = item.name
             const totalProducts = item.totalProducts
             return { name, totalProducts };
+        })
+        return res.status(status.OK).json({
+            message: "Chartdata fetched successfully",
+            data: categoryProduct
+        });
+    }
+    catch (err) {
+        return res.status(status.INTERNAL_SERVER_ERROR).json({
+            message: err.message
+        });
+    }
+};
+
+exports.categoryitems = async (req, res) => {
+    try {
+        const results = await eventCategory.aggregate([
+            {
+                $lookup: {
+                    from: "events",
+                    localField: "_id",
+                    foreignField: "category",
+                    as: "events"
+                }
+            },
+            {
+                $project: {
+                    _id: 1,
+                    name: 1,
+                    description: 1,
+                    totalProducts: { $size: "$events" }
+                }
+            }
+        ]);
+        const categoryProduct = results.map((item) => {
+            const _id = item._id;
+            const name = item.name;
+            const description = item.description;
+            const totalProducts = item.totalProducts
+            return { _id, name, description, totalProducts };
         })
         return res.status(status.OK).json({
             message: "Chartdata fetched successfully",

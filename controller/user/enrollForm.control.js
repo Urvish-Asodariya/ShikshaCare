@@ -168,6 +168,12 @@ exports.enrollForm = async (req, res) => {
 
 exports.otpCheck = async (req, res) => {
     try {
+        const user = await User.findOne({ mobileNumber: req.body.mobile });
+        if (!user) {
+            return res.status(status.NOT_FOUND).json({
+                message: "User not found"
+            });
+        }
         const verificationCheck = await client.verify.v2
             .services(process.env.SERVICES)
             .verificationChecks.create({
@@ -181,6 +187,8 @@ exports.otpCheck = async (req, res) => {
                 message: "Invalid OTP or mobile number",
             });
         }
+        user.mobileVerified = true;
+        await user.save();
         return res.status(status.OK).json({
             message: "OTP verified successfully",
         });

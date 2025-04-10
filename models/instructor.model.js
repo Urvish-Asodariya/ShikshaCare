@@ -56,7 +56,7 @@ const instructorSchema = new mongoose.Schema({
     },
     additionalInformation: {
         languages: {
-            type: String
+            type: [String]
         },
         bio: {
             type: String,
